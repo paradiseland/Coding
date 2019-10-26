@@ -13,7 +13,7 @@ Conclusion:a state's level of per capita expenditure is positively and significa
 The failure to include neighbours' expenditures in the equation leads to substantially different estimated effects of other important explanatory valuables such as federal grants and age stucture of the population.
 
 >### **2.theoretical considerations**
->$$V^i=V^i[Y^i-T^i,G^i;\Psi^i]$$
+>$$V^i=V^i(Y^i-T^i,G^i;\Psi^i)$$
 $Y^i$:per capita in state i
 $T^i$:tax burden of each consumer
 $G^i$:the level of piblic services provided
