@@ -2,7 +2,20 @@
 This paper establishes asymptotic properties of quasi-maximum likelihood estima-
 tors for spatial dynamic panel data with both time and individual fixed effects when
 the number of individuals n and the number of time periods T can be large. 
+asymptotic 渐近线的，渐近的
 >### **1.introduction**
-for dynamic panel data model 
+>for dynamic panel data model 
 there is time effects.
+>>$$n^\frac 13 /T \rightarrow 0$$
+>>$$n/T \rightarrow 0 $$
+>- Section2:model&transformation procedure;QML(**Quasi-maximum likelihood**)
+>- Section3：consitency and asymptotic distribution of QML
+>- Section4:asymptotic properties of the direct approach estimator.
+
+>### **2.the model**
+$$Y_{nt}=\lambda_0W_nY{nt}+\gamma_0Y_{n,t-1}+\rho_0W_nY_{n,t-1}+X_{nt}\beta_0+c_{n0}+\alpha_{t0}l_n+V_{nt}$$
+,t=1,2,...,T,
+$Y_{nt}=(y_{1t},y_{2t},...,y_{nt})'$
+$V_{nt}=(v_{1t},v_{2t},...,v_{nt})'$
+$W_n$:spatial weight matrix
 
