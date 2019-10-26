@@ -1,0 +1,8 @@
+### A Spatial dynamic panel data model with both time and individual fixed effects.
+This paper establishes asymptotic properties of quasi-maximum likelihood estima-
+tors for spatial dynamic panel data with both time and individual fixed effects when
+the number of individuals n and the number of time periods T can be large. 
+>### **1.introduction**
+for dynamic panel data model 
+there is time effects.
+
