@@ -1,0 +1,71 @@
+### Budget spilovers and fiscal policy interdependence
+>### **1.introduction**
+>-  another important determinant of the state and local gov:  
+the expenditures of neighbouring gov
+>- jurisdiction spending levels also affect each other
+>- "neighbour" refers more to economically and demographically similar states.
+>>layout:
+2.simple model
+3.empirical specifiction.+ a little econometrical problems
+4.annual observations
+5.results
+Conclusion:a state's level of per capita expenditure is positively and significantly affected by the expenditure of its neighbours;
+The failure to include neighbours' expenditures in the equation leads to substantially different estimated effects of other important explanatory valuables such as federal grants and age stucture of the population.
+
+>### **2.theoretical considerations**
+$$V^i=V^i[Y^i-T^i,G^i;\Psi^i]$$
+$Y^i$:per capita in state i
+$T^i$:tax burden of each consumer
+$G^i$:the level of piblic services provided
+$\Psi^i$:vector of exogenous condition that affect the utilities of residents.
+$$T^i\geq G^i$$
+Example of spiltover:
+one state's expnditures on roads may provide benefits to the residents of neighboring states.
+care about poverty levels in other states,derive utility from other states' welfare expenditure.
+
+>### **3.empirical implementation**
+>- **3.1 Econnometric model**
+$E_{it}$:state i's per capita expenditures in year t
+characteristics $X_{it}$
+the expenditures of its neighbors:$E_{jt}$
+model:
+$$E_{it}=X_{it}\beta+\phi E_{jt}+u_{it}$$
+$\beta,\phi$ are parameters,$u_{it}$ is a random error
+$$E_{it}=X_{it}\beta+\phi E_{jt}+u_{it}+f_t+h_t$$
+$f_t,h_t$:individual and year effects.
+>- *3.1.1 multiple neighbors*
+impact of state j on state i's spending depend on complementarity;
+depend on extent similar population.
+<u>*weight importance:*</u>
+$$\sum^{n}_{j=1}\omega_{ij}E_{jt}$$
+in matrix form:
+$$E_t=\phi W E_t + X_t \beta + u_t$$
+$E_t$ :in year t,48 states' expenditures
+$X_t$ :48Xk year and state effects
+W :48X48 weighting matrix
+>- *3.1.2 correlated random shocks*
+**apprantly** exist correlation. 
+$$u_t = \rho W u_t+\epsilon_t$$
+$\epsilon$:an idiosyncratic error,uncorrelated
+>- *3.1.3 simulataneous estimation*
+
+>- **3.2 specify the weight matrix**
+$$W = \alpha W^{income}+(1-\alpha)W^{Geography}$$
+
+>### **4.Data**
+>### **5.Results**
+>- **5.2 categories of spending**
+>seperate for four different types of expenditures.
+>>health and human servisce 
+administration
+highways
+education
+
+>### **6.Summary**
+>states gov are likely to be influenced by actions of neighboring states
+neighbour 1$$\Uparrow$ $\rightarrow$ our state 0.7\$$\Uparrow$
+>**factor of similarity**: 
+>> % of black 
+>>....
+$\approx$  country$\rightarrow$country
+

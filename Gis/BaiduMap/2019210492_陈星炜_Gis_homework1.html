@@ -1,0 +1,121 @@
+<!DOCTYPE html>  
+<html>
+<head>  
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />  
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />  
+<title>Gis_homework1</title>  
+<style type="text/css">  
+html{height:100%}  
+body{height:100%;margin:0px;padding:0px}  
+#container{height:100%}  
+</style>  
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=OBjaBeCtdS9hZRgQy2LWCMCcOnwi7Iot">
+//v3.0版本的引用方式：src="http://api.map.baidu.com/api?v=3.0&ak="
+</script>
+</head>  
+ 
+<body>  
+<div id="container"></div> 
+<script type="text/javascript"> 
+	var map = new BMap.Map("container");
+	var point = new BMap.Point(113.97571, 22.598118);
+	// 初始化地图，设置中心点坐标和地图级别
+	map.centerAndZoom(point, 18);
+	
+	//添加页面设置
+	map.enableScrollWheelZoom(true);
+	map.enableDragging();
+	map.enableKeyboard();
+	map.addControl(new BMap.NavigationControl());
+	
+	//添加地图组件
+	map.addControl(new BMap.ScaleControl());    
+	map.addControl(new BMap.OverviewMapControl());    
+	map.addControl(new BMap.MapTypeControl());    
+	map.setCurrentCity("深圳");
+
+	//添加点
+	var point_dorm = new BMap.Point(113.974182,22.598115);
+	var point_canteen = new BMap.Point(113.973917,22.598836);
+	var point_lab = new BMap.Point(113.977034,22.598165);
+	var point_lib = new BMap.Point(113.979612,22.596638);
+	
+	//添加标注
+	var marker_dorm = new BMap.Marker(point_dorm);
+	var marker_canteen = new BMap.Marker(point_canteen);
+	var marker_lab = new BMap.Marker(point_lab);
+	var marker_lib = new BMap.Marker(point_lib);
+	
+	//建立信息窗口
+	var opts = {width:5,height:2};
+	var infoWindow_dorm = new BMap.InfoWindow('<li style="list-style-type:none;">'+'宿舍',opts);
+	var infoWindow_canteen = new BMap.InfoWindow('<li style="list-style-type:none;">'+'食堂',opts);
+	var infoWindow_lab = new BMap.InfoWindow('<li style="list-style-type:none;">'+'实验室',opts);
+	var infoWindow_lib = new BMap.InfoWindow('<li style="list-style-type:none;">'+'图书馆',opts);
+	
+	
+	//显示标注
+	map.addOverlay(marker_dorm);
+	map.addOverlay(marker_canteen);
+	map.addOverlay(marker_lab);
+	map.addOverlay(marker_lib);
+	
+	/*确定标注悬停事件
+	marker_dorm.addEventListener("onmouseover", function(){    
+		alert("宿舍");  
+	});  
+	marker_canteen.addEventListener("onmouseover", function(){    
+		alert("食堂");    
+	});  
+	marker_lab.addEventListener("onmouseover", function(){    
+		alert("实验室");    
+	});  
+	marker_lib.addEventListener("onmouseover", function(){    
+		alert("图书馆");    
+});  */
+	marker_dorm.addEventListener("onmouseover",function(){
+								map.openInfoWindow(infoWindow_dorm,point_dorm)});
+	marker_dorm.addEventListener("onmouseout",function(){
+								map.closeInfoWindow(infoWindow_dorm,point_dorm)});
+	marker_canteen.addEventListener("onmouseover",function(){
+								map.openInfoWindow(infoWindow_canteen,point_canteen)});
+	marker_canteen.addEventListener("onmouseout",function(){
+								map.closeInfoWindow(infoWindow_canteen,point_canteen)});
+	marker_lab.addEventListener("onmouseover",function(){
+								map.openInfoWindow(infoWindow_lab,point_lab)});
+	marker_lab.addEventListener("onmouseout",function(){
+								map.closeInfoWindow(infoWindow_lab,point_lab)});
+	marker_lib.addEventListener("onmouseover",function(){
+								map.openInfoWindow(infoWindow_lib,point_lib)});
+	marker_lib.addEventListener("onmouseout",function(){
+								map.closeInfoWindow(infoWindow_lib,point_lib)});
+
+
+	var polyline1 = new BMap.Polyline([point_dorm,point_canteen],
+    {strokeColor:"red", strokeWeight:6, strokeOpacity:0.5}
+    );
+	var polyline2 = new BMap.Polyline([point_dorm,point_lab],
+    {strokeColor:"orange", strokeWeight:6, strokeOpacity:0.5}
+    );
+	var polyline3 = new BMap.Polyline([point_dorm,point_lib],
+    {strokeColor:"yellow", strokeWeight:6, strokeOpacity:0.5}
+    );
+	var polyline4 = new BMap.Polyline([point_canteen,point_lab],
+    {strokeColor:"blue", strokeWeight:6, strokeOpacity:0.5}
+    );
+	var polyline5 = new BMap.Polyline([point_canteen,point_lib],
+    {strokeColor:"brown", strokeWeight:6, strokeOpacity:0.5}
+    );
+	var polyline6 = new BMap.Polyline([point_lab,point_lib],
+    {strokeColor:"green", strokeWeight:6, strokeOpacity:0.5}
+    );
+	map.addOverlay(polyline1);
+	map.addOverlay(polyline2);
+	map.addOverlay(polyline3);
+	map.addOverlay(polyline4);
+	map.addOverlay(polyline5);
+	map.addOverlay(polyline6);
+
+</script>  
+</body>  
+</html>

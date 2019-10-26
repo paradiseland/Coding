@@ -1,0 +1,2 @@
+加载了插件 open in browser
+key:alt+b
