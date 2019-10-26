@@ -13,14 +13,14 @@ Conclusion:a state's level of per capita expenditure is positively and significa
 The failure to include neighbours' expenditures in the equation leads to substantially different estimated effects of other important explanatory valuables such as federal grants and age stucture of the population.
 
 >### **2.theoretical considerations**
-$$V^i=V^i[Y^i-T^i,G^i;\Psi^i]$$
+>$$V^i=V^i[Y^i-T^i,G^i;\Psi^i]$$
 $Y^i$:per capita in state i
 $T^i$:tax burden of each consumer
 $G^i$:the level of piblic services provided
 $\Psi^i$:vector of exogenous condition that affect the utilities of residents.
 $$T^i\geq G^i$$
 Example of spiltover:
-one state's expnditures on roads may provide benefits to the residents of neighboring states.
+one state's expenditures on roads may provide benefits to the residents of neighboring states.
 care about poverty levels in other states,derive utility from other states' welfare expenditure.
 
 >### **3.empirical implementation**
@@ -56,7 +56,7 @@ $$W = \alpha W^{income}+(1-\alpha)W^{Geography}$$
 >### **5.Results**
 >- **5.2 categories of spending**
 >seperate for four different types of expenditures.
->>health and human servisce 
+>>health and human service 
 administration
 highways
 education
