@@ -1,9 +1,14 @@
+"""
+define the variable feature of the problem 
+"""
 class Variable:
-
+    """
+    define the variable
+    """
     def __init__(self, type_of_num, bound, name):
         self.type = type_of_num
-        self.LowerBound = bound[0]
-        self.UpperBound = bound[1]
+        self.lower_bound = bound[0]
+        self.upper_bound = bound[1]
         self.name = name
 
     def __getitem__(self, item):
@@ -16,10 +21,8 @@ class Variable:
 
 
 if __name__ == '__main__':
-    variableList = []
+    VARIABLE_LIST = []
     for i in range(3):
         # 'y%d' % i 产出名称序列
-        variableList.append(Variable('ICI'[i], [i, float('inf')], 'x%d' % i+1))
-    a = Variable("int", [0, float('inf')], 'a')
-    print(a.type)
-
+        VARIABLE_LIST.append(Variable('ICI'[i], [i, float('inf')], 'x%d' % (i+1)))
+    print(VARIABLE_LIST[0].name,VARIABLE_LIST[0].lower_bound,VARIABLE_LIST[0].upper_bound)

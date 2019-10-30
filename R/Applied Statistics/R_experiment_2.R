@@ -11,7 +11,7 @@ pre <- predict(glm_new,data.frame(X2=2,X3=0))
 pre1 <- predict(glm_new,data.frame(X2=2,X3=1))
 (p1 <- exp(pre1)/(1+exp(pre1)))
 
-influence.measures(glm_disease)
+# influence.measures(glm_disease)
 
 interval_estimate <- function(fm,alpha=0.5) {
     Result <- summary(fm)$coefficients

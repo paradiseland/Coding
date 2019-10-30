@@ -47,40 +47,22 @@ def calculate():
     res = Result(is_solved=my_prob.solution.get_status(),
                  objective_value=my_prob.solution.get_objective_value(),
                  x_value=x, status=my_prob.solution.status[my_prob.solution.get_status()])
-    print("Problem:{0}\nOptimal Value:{1}\nSolution:{2}".format(my_prob.solution.status[res.isSolved],
-                                                                res.objValue, res.xValue))
-    my_prob.write("cplex.lp")
+    print("Problem:{0}\nOptimal Value:{1}\nSolution:{2}".format(my_prob.solution.status[res.is_solved],
+                                                                res.obj_value, res.x_value))
+    # my_prob.write("cplex.lp")
 
 
 if __name__ == "__main__":
-    # # input the problem
-    # # Objective
-    # my_obj = Objective('min', [2, -4])
-    # # Variable
-    # my_bounds = [[0, 0],
-    #              [cplex.infinity, cplex.infinity]]
-    # type_of_var = 'II'
-    # # Constraints
-    # rows = [[["x1", "x2"], [2, 1]],
-    #         [["x1", "x2"], [-4, 4]]]
-    # relation = 'LL'
-    # right_side = [5, 5]
-
     # input the problem
     # Objective
-#%%
-    my_obj = Objective('max', [2, 3, -5])
+    my_obj = Objective('min', [2, -4])
     # Variable
-    my_bounds = [[0, 0, 0],
-                 [cplex.infinity, cplex.infinity, cplex.infinity]]
-    type_of_var = 'III'
+    my_bounds = [[0, 0],
+                 [cplex.infinity, cplex.infinity]]
+    type_of_var = 'II'
     # Constraints
-#%%
-    rows = [[["x1", "x2", "x3"], [1, 1, 1]],
-            [["x1", "x2", "x3"], [2, -5, 1]],
-            [["x1", "x2", "x3"], [1, 3, 1]]]
-#%%
-    relation = 'EGL'
-    right_side = [7, 10, 12]
-#%%
+    rows = [[["x1", "x2"], [2, 1]],
+            [["x1", "x2"], [-4, 4]]]
+    relation = 'LL'
+    right_side = [5, 5]
     calculate()
