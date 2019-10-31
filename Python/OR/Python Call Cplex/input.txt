@@ -1,1 +1,10 @@
-zzz
+min
+2 -4
+0 0
+inf inf
+II
+x1 x2
+2 1,-4 4
+LL
+5 5
+

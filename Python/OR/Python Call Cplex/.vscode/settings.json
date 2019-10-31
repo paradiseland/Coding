@@ -1,3 +1,14 @@
 {
-    "python.pythonPath": "C:\\Python\\Python_3.6.8\\python.exe"
+    "python.pythonPath": "C:\\Python\\Python_3.6.8\\python.exe",
+    "git.autorefresh": false,
+    "git.autoRepositoryDetection": false,
+    "git.confirmEmptyCommits": false,
+    "git.confirmForcePush": false,
+    "git.confirmSync": false,
+    "git.countBadge": "off",
+    "git.decorations.enabled": false,
+    "git.detectSubmodules": false,
+    "git.enabled": false,
+    "git.enableStatusBarSync": false,
+    "git.openDiffOnClick": false
 }

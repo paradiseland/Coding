@@ -11,7 +11,7 @@ def generate_problem(prob):
                 for i in range(len(my_obj.coefficient))]
 
     var_names = [var_list[i].name for i in range(len(var_list))]
-    constraints = [Constraint('x%d' % (i+1), rows[i][1], relation[i], right_side[i])
+    constraints = [Constraint('c%d' % (i+1), rows[i][1], relation[i], right_side[i])
                    for i in range(len(rows))]
     row_names = [constraints[i].name for i in range(len(constraints))]
 
@@ -33,15 +33,16 @@ def calculate():
         my_prob.solve()
     except CplexError as exc:
         print(exc)
-    num_rows = len(cons)
-    num_cols = len(variables)
+    
+    num_rows = my_prob.linear_constraints.get_num()
+    num_cols = my_prob.variables.get_num()
     print("Solution status = ", my_prob.solution.get_status(), ":", end=' ')
     print(my_prob.solution.status[my_prob.solution.get_status()])
     print("Solution value  = ", my_prob.solution.get_objective_value())
-    slack = my_prob.solution.get_linear_slacks()
+    # slack = my_prob.solution.get_linear_slacks()
     x = my_prob.solution.get_values()
-    for i in range(num_rows):
-        print("Row %d:  Slack = %10f" % (i, slack[i]))
+    # for i in range(num_rows):
+    #     print("Row %d:  Slack = %10f" % (i, slack[i]))
     for j in range(num_cols):
         print("Column %d:  Value = %10f " % (j, x[j]))
     res = Result(is_solved=my_prob.solution.get_status(),
@@ -52,17 +53,44 @@ def calculate():
     # my_prob.write("cplex.lp")
 
 
+# if __name__ == "__main__":
+#     # input the problem
+#     # Objective
+#     my_obj = Objective('min', [2, -4])
+#     # Variable
+#     my_bounds = [[0, 0],
+#                  [float('inf'), float('inf')]]
+#     type_of_var = 'II'
+#     # Constraints
+#     rows = [[["x1", "x2"], [2, 1]],
+#             [["x1", "x2"], [-4, 4]]]
+#     relation = 'LL'
+#     right_side = [5, 5]
+#     calculate()
+
 if __name__ == "__main__":
-    # input the problem
-    # Objective
-    my_obj = Objective('min', [2, -4])
-    # Variable
-    my_bounds = [[0, 0],
-                 [cplex.infinity, cplex.infinity]]
-    type_of_var = 'II'
-    # Constraints
-    rows = [[["x1", "x2"], [2, 1]],
-            [["x1", "x2"], [-4, 4]]]
-    relation = 'LL'
-    right_side = [5, 5]
+    input_problem = []
+    with open('input1.txt', 'r') as f:
+    # with open('input.txt', 'r') as f:
+        for line in f.readlines():
+            input_problem.append(line.strip('\n'))
+    my_obj_type = input_problem[0]
+    my_obj_coe = [int(i) for i in input_problem[1].split(' ')]
+    my_lower_bounds = [float(i) for i in input_problem[2].split(' ')]
+    my_upper_bounds = [float(i) for i in input_problem[3].split(' ')]
+    type_of_variable = [i for i in input_problem[4].split(' ')]
+    name_of_variable = [i for i in input_problem[5].split(' ')]
+    tech_coe = [j.split(' ') for j in [coes for coes in input_problem[6].split(',')]]
+    for i in range(len(tech_coe)):
+        for j in range(len(tech_coe[i])):
+            tech_coe[i][j] = int(tech_coe[i][j])
+    sign_of_cons = [i for i in input_problem[7].split(' ')]
+    right_of_cons = [float(i) for i in input_problem[8].split(' ')]
+    
+    my_obj = Objective(my_obj_type,my_obj_coe)
+    my_bounds = [my_lower_bounds,my_upper_bounds]
+    type_of_var = type_of_variable[0]
+    rows =[[name_of_variable,tech_coe[i]]for i in range(len(tech_coe))] 
+    relation = sign_of_cons[0]
+    right_side = [int(i) for i in right_of_cons]
     calculate()
