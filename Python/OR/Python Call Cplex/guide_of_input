@@ -1,0 +1,12 @@
+# input the problem
+# Objective
+my_obj = Objective('min', [2, -4])
+# Variable
+my_bounds = [[0, 0],
+                [cplex.infinity, cplex.infinity]]
+type_of_var = 'II'
+# Constraints
+rows = [[["x1", "x2"], [2, 1]],
+        [["x1", "x2"], [-4, 4]]]
+relation = 'LL'
+right_side = [5, 5]
