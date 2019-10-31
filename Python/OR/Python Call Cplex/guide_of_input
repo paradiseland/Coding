@@ -1,12 +1,12 @@
-# input the problem
-# Objective
-my_obj = Objective('min', [2, -4])
-# Variable
-my_bounds = [[0, 0],
-                [cplex.infinity, cplex.infinity]]
-type_of_var = 'II'
-# Constraints
-rows = [[["x1", "x2"], [2, 1]],
-        [["x1", "x2"], [-4, 4]]]
-relation = 'LL'
-right_side = [5, 5]
+row1 type of objective:          min/max
+row2 coefficients of objective:  a b ...(seperated by spaces)
+row3 lower bounds of variables:  a b ...(-inf for -infinity)
+row4 upper bounds of variables:  a b ...(inf for infinity)
+row5 type of variables:          II... (I as integer;C as real number)
+row6 names of variables:         x1 x2 ...(like this)      
+row7 technology coefficients:    a b,c d,...(use space in same line,use commas to seperate different lines )
+row8 signs of constraints:       LL... (L:less than;G:greater than;E:equal;R:ranged)
+row9 right side of constraints:  a b ... 
+
+
+you can see the demo "input.txt" or "input1.txt" to give a problem description.

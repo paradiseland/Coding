@@ -50,7 +50,14 @@ def calculate():
                  x_value=x, status=my_prob.solution.status[my_prob.solution.get_status()])
     print("Problem:{0}\nOptimal Value:{1}\nSolution:{2}".format(my_prob.solution.status[res.is_solved],
                                                                 res.obj_value, res.x_value))
-    # my_prob.write("cplex.lp")
+    outputfile = "output.txt"
+    with open(outputfile, 'a+') as out:
+        out.write("Solution status = {0}:{1}\n".format(my_prob.solution.get_status(),
+                                my_prob.solution.status[my_prob.solution.get_status()]))
+        out.write("Optimal objective value = {0}".format(my_prob.solution.get_objective_value())+'\n')  
+        for j in range(num_cols):
+            out.write("x%d: %.1f"% (j, x[j])+'\n')
+    my_prob.write("cplex.lp")
 
 
 # if __name__ == "__main__":
