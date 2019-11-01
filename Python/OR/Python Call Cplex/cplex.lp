@@ -2,9 +2,13 @@
 \Problem name: 
 
 Maximize
- obj: 2 x1 + 3 x2 - 5 x3
+ obj: 8 x1 + 5 x2
 Subject To
- x1: x1 + x2 + x3  = 7
- x2: 2 x1 - 5 x2 + x3 >= 10
- x3: x1 + 3 x2 + x3 <= 12
+ c1: x1 + x2 <= 6
+ c2: 9 x1 + 5 x2 <= 45
+Bounds
+      x1 >= 0
+      x2 >= 0
+Generals
+ x1  x2 
 End
