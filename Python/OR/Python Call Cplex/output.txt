@@ -1,0 +1,8 @@
+Solution status = 101:MIP_optimal
+Optimal objective value = 40.0
+x0: 5.0
+x1: 0.0
+Solution status = 101:MIP_optimal
+Optimal objective value = 40.0
+x0: 5.0
+x1: 0.0
