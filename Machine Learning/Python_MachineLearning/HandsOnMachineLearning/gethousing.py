@@ -1,10 +1,13 @@
-# get housing
+"""
+data preprocessing
+"""
 import os
 import tarfile
+import hashlib
 import numpy as np
 from six.moves import urllib
 import pandas as pd
-import hashlib
+import matplotlib.pyplot as plt
 
 DOWNLOAD_ROOT = "https://raw.githubusercontent.com/ageron/handson-ml/master/"
 HOUSING_PATH = "datasets/housing"
@@ -12,6 +15,7 @@ HOUSING_URL = DOWNLOAD_ROOT + HOUSING_PATH + "/housing.tgz"
 
 
 def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
+    """get source data:housing from github"""  
     if not os.path.isdir(housing_path):
         os.makedirs(housing_path)
     tgz_path = os.path.join(housing_path, "housing.tgz")
@@ -24,6 +28,7 @@ def fetch_housing_data(housing_url=HOUSING_URL, housing_path=HOUSING_PATH):
 # fetch_housing_data()
 
 def load_housing_data(housing_path=HOUSING_PATH):
+    """load the data"""
     csv_path = os.path.join(housing_path,"housing.csv")
     return pd.read_csv(csv_path)
 
@@ -34,8 +39,9 @@ housing.info()
 housing["ocean_proximity"].value_counts()
 housing.describe()
 
-import matplotlib.pyplot as plt
-housing.hist(bins=50, figsize=(20,15))
+
+
+housing.hist(bins=50, figsize=(20,15)) # bins:num of bars.
 plt.show()
 
 # 创建测试集
@@ -74,14 +80,14 @@ for train_index,test_index in split.split(housing,housing["income_cat"]):
 
 # 删除incom_cat属性，回归原样
 for set in (strat_train_set,strat_test_set):
-    set.drop(["income_cat"],axis=1,inplace=True)
+    set.drop(["income_cat"], axis=1, inplace=True)
 
 # 仅使用训练集作可视化
 housing = strat_train_set.copy()
-housing.plot(kind="scatter",x="longitude",y="latitude")
+housing.plot(kind="scatter", x="longitude", y="latitude")
 plt.show()
 # 突出高密度地区的可视化
-housing.plot(kind="scatter",x="longitude",y="latitude",alpha=0.1)
+housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.1)
 
 # 利用颜色表来可视化不同地区房价
 housing.plot(kind="scatter", x="longitude", y="latitude", alpha=0.4,s=housing["population"]/100,
