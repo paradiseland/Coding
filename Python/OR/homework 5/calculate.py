@@ -11,13 +11,10 @@ x = [x1, x2]
 f_expr = -(x1-2)**2-x1-x2**2
 f_gradient = [sp.diff(f_expr, x1), sp.diff(f_expr, x2)]
 print("f_gradient:", f_gradient)
-f_gradient_value = [1, 1]
-
+f_gradient_value = [f_gradient[i].subs(x[i], point[i]) for i in range(2)]
+print('gradient:', f_gradient_value)
 while f_gradient_value != [0, 0]:
-    f_gradient_value = [f_gradient[i].subs(x[i], point[i]) for i in range(2)]
-    print('gradient:', f_gradient_value)
-    if f_gradient_value == [0, 0]:
-        break
+
     point = [(x[i]+f_gradient_value[i]*t0).subs([(x1, point[0]), (x2, point[1])])
              for i in range(2)]
     f_t0 = sp.expand(f_expr.subs([(x1, point[0]), (x2, point[1])]))
