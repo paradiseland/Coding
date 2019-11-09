@@ -22,3 +22,26 @@ DEPOT_SECTION
  1  
  -1  
 EOF 
+
+
+Total (root+branch&cut) =    0.08 sec. (0.09 ticks)
+Solution status =  101 : MIP_optimal
+Solution value  =  370.0
+Column 0:  Value =   1.000000
+Column 1:  Value =   0.000000
+Column 2:  Value =   1.000000
+Column 3:  Value =   1.000000
+Column 4:  Value =   1.000000
+Column 5:  Value =   1.000000
+Column 6:  Value =  -0.000000
+Column 7:  Value =  -0.000000
+Column 8:  Value =  -0.000000
+Column 9:  Value =   1.000000
+Column 10:  Value =  -0.000000
+Column 11:  Value =  -0.000000
+Column 12:  Value =  -0.000000
+Column 13:  Value =  -0.000000
+Column 14:  Value =   1.000000
+Problem:MIP_optimal
+Optimal Value:370.0
+Solution:[1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]
