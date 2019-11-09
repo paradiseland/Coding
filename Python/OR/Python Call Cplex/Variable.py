@@ -10,7 +10,7 @@ class Variable:
         self.lower_bound = bound[0]
         self.upper_bound = bound[1]
         self.name = name
-
+    
     def __getitem__(self, item):
         if item in self.__dict__:
             return self.__dict__[item]
@@ -18,7 +18,9 @@ class Variable:
     # instance a['name']/a['LowerBound']/a['UpperBound'] can get the corresponding value
     def __setitem__(self, key, value):
         self.__dict__[key] = value
-
+    
+    def __setattr__(self, name, value):
+        return super().__setattr__(name, value)
 
 if __name__ == '__main__':
     VARIABLE_LIST = []
