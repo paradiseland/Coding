@@ -1,0 +1,24 @@
+NAME : A-n6-k2
+COMMENT : (Qi, Min no of trucks: 2, Optimal value: )
+TYPE : CVRP
+DIMENSION : 6
+EDGE_WEIGHT_TYPE : EUC_2D 
+CAPACITY : 100
+NODE_COORD_SECTION 
+ 1 50 50
+ 2 0 50
+ 3 0 0
+ 4 50 0
+ 5 50 100
+ 6 100 100
+DEMAND_SECTION
+1 0 
+2 20 
+3 30 
+4 40 
+5 50 
+6 50 
+DEPOT_SECTION 
+ 1  
+ -1  
+EOF 
