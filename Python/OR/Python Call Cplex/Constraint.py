@@ -1,3 +1,8 @@
+"""
+define the class of constraints in the programming.
+"""
+
+
 class Constraint:
 
     def __init__(self, name, constraint_coefficients, relation, right_side,):
@@ -20,14 +25,13 @@ if __name__ == '__main__':
     EQ = 'equal'
     LE = 'less'
     GE = 'greater'
-    c1 = Constraint('C1',coe, EQ, 3)
+    c1 = Constraint('C1', coe, EQ, 3)
     print(c1['name'], c1['coefficients'], c1['relation'], c1['right'])
     constraints = []
-    sense = [EQ,LE,LE]
+    sense = [EQ, LE, LE]
     coe1 = [[1, 2, 3],
-            [2,3,5],
-            [3,4,5]]
+            [2, 3, 5],
+            [3, 4, 5]]
     for i in range(3):
         # 'y%d' % i 产出名称序列
         constraints.append(Constraint('c%d' % i+1, coe[i], sense[i], 3))
-

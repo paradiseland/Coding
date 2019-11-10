@@ -13,7 +13,8 @@ my_lower_bounds = [float(i) for i in input_problem[2].split(' ')]
 my_upper_bounds = [float(i) for i in input_problem[3].split(' ')]
 type_of_variable = [i for i in input_problem[4].split(' ')]
 name_of_variable = [i for i in input_problem[5].split(' ')]
-tech_coe = [j.split(' ') for j in [coes for coes in input_problem[6].split(',')]]
+tech_coe = [j.split(' ')
+            for j in [coes for coes in input_problem[6].split(',')]]
 for i in range(len(tech_coe)):
     for j in range(len(tech_coe[i])):
         tech_coe[i][j] = int(tech_coe[i][j])
@@ -28,6 +29,6 @@ print(name_of_variable)
 print(tech_coe)
 print(sign_of_cons)
 print(right_of_cons)
-rows =[[name_of_variable,tech_coe[i]]for i in range(len(tech_coe))] 
+rows = [[name_of_variable, tech_coe[i]]for i in range(len(tech_coe))]
 print(rows)
 pass

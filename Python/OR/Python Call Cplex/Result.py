@@ -2,6 +2,7 @@
 define the result
 """
 
+
 class Result:
     """
     define the output result class
