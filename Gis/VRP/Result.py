@@ -1,6 +1,7 @@
 """
-define the result
+define the result in the programming.
 """
+
 
 class Result:
     """

@@ -1,3 +1,8 @@
+"""
+try to open the .txt file to get parameters of the VRP.
+use some match functions from python standard library such as 're'.
+"""
+
 import re
 input_prob = []
 input_problem = dict()
@@ -12,15 +17,15 @@ dim = int(input_problem['DIMENSION'])
 
 type_of_vrp = input_prob[0].split()
 type_of_vrp = type_of_vrp[2]
-k_order_1 = re.search('-k',type_of_vrp).span()
-K =int(list(type_of_vrp)[k_order_1[1]])
+k_order_1 = re.search('-k', type_of_vrp).span()
+K = int(list(type_of_vrp)[k_order_1[1]])
 
 location = []
 demand = []
 for i in range(7, 7+dim):
     cur = input_prob[i].split()
     del cur[0]
-    cur_location = (int(cur[0]),int(cur[1]))
+    cur_location = (int(cur[0]), int(cur[1]))
     location.append(cur_location)
 
 for i in range(14, 14+dim):
@@ -28,4 +33,3 @@ for i in range(14, 14+dim):
     del cur_demand[0]
     cur_demand = int(cur_demand[0])
     demand.append(cur_demand)
-

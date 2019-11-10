@@ -1,3 +1,8 @@
+"""
+define the class of objecctive in the problem.
+"""
+
+
 class Objective:
     def __init__(self, prefer, obj_coe):
         self.preference = prefer
