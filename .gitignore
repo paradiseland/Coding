@@ -2,3 +2,5 @@
 /.vscode
 .vscode
 Python/PUBG_analysis/pubg-match-deaths/
+.json
+.pyc
