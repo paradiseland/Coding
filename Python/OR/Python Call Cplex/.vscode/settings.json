@@ -10,5 +10,9 @@
     "git.detectSubmodules": false,
     "git.enabled": false,
     "git.enableStatusBarSync": false,
-    "git.openDiffOnClick": false
+    "git.openDiffOnClick": false,
+    "python.autoComplete.extraPaths":[
+               "C:/Python/Python_3.6.8/Lib/site-packages",
+               "C:/Python/Python_3.6.8/Scripts"],
+    "python.jediEnabled": false
 }
