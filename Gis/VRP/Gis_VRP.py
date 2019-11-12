@@ -31,7 +31,7 @@ def get_parameter(file_name):
     type_of_vrp = type_of_vrp[2]
     k_order_1 = re.search('-k', type_of_vrp).span()
     K = int(list(type_of_vrp)[k_order_1[1]])
-    location = []
+    location = [] 
     demand = []
     for j in range(7, 7+dim):
         cur = input_prob[j].split()
