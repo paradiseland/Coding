@@ -1,8 +1,0 @@
-# the proportion of the population with higher education level to the whole population (DXBZ)
-# the proportion of the population with junior middle school education level to the whole population (CZBZ)
-# the proportion of the illiterate and semi-illiterate population to the whole population (WMBZ) to reflect the situation of the population with higher, middle and lower education level
-
-(1) Computing the Euclidean distance of samples, using the longest distance method, the class average method, the center of gravity method and Ward method to do clustering analysis, and drawing the corresponding pedigree diagram, drawing the curve of aggregation coefficient and classification number, analyzing and determining the reasonable number of classification;
-(2) If the sample is divided into 4 categories, try to write (1) the classification results of various methods.
-(3) The K-means clustering method (divided into four categories) is used to give the corresponding classification results, and the results are compared with those of (2).
-
