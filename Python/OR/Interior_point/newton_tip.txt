@@ -1,7 +1,7 @@
 for multivariate:
 f(X) = f(X_0) + ▽f(X_0)^T(X-X_0)
 
-p = ▽f(x)/▽^2f(x)
+p = -▽f(x)▽^2f(x)^-1
 
 
 
