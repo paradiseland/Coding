@@ -6,11 +6,69 @@ import copy
 import numpy as np
 import cplex
 from cplex.exceptions import CplexError
+from cplex.callbacks import UserCutCallback, LazyConstraintCallback
+
+
+
 import matplotlib.pyplot as plt
 from Variable import Variable
 from Constraint import Constraint
 from Objective import Objective
 from Result import Result
+
+EPS = 1e-6
+
+
+class LazyCallback(LazyConstraintCallback):
+    def __init__(self, env):
+        LazyConstraintCallback.__init__(self, env)
+
+    def __call__(self):
+        a =1
+        for i in range(4):
+            print('*'*30)
+        cur_x = self.get_values()
+        for i in range(len(cur_x)):
+            print(cur_x[i])
+        print(self.get_values(1))
+        print(self.a)
+        print("我成功了吗>>>????")
+
+
+
+
+class Usercb1(UserCutCallback):
+    def __init__(self, env,):
+        UserCutCallback.__init__(self, env)
+
+    def __call__(self):
+        cur_x = self.get_values()
+        for i in range(len(cur_x)):
+            print(cur_x[i])
+
+        print("我成功了吗>>>????")
+        for i in range(4):
+            print('*'*30)
+        print(self.a)
+
+        
+        # for j in self.locations:
+        #     isused = self.get_values(self.used[j])
+        #     served = sum(self.get_values(
+        #         [self.supply[c][j] for c in self.clients]))
+        #     if served > (len(self.clients) - 1.0) * isused + EPS:
+        #         print('Adding lazy constraint %s <= %d*used(%d)' %
+        #               (' + '.join(['supply(%d)(%d)' % (x, j) for x in self.clients]),
+        #                len(self.clients) - 1, j))
+        #         self.add(constraint=cplex.SparsePair(
+        #             [self.supply[c][j] for c in self.clients] + [self.used[j]],
+        #             [1.0] * len(self.clients) + [-(len(self.clients) - 1)]),
+        #             sense='L',
+        #             rhs=0.0)
+
+
+def make_cuts():
+    pass
 
 
 def get_parameter(file_name):
@@ -31,7 +89,7 @@ def get_parameter(file_name):
     type_of_vrp = type_of_vrp[2]
     k_order_1 = re.search('-k', type_of_vrp).span()
     K = int(list(type_of_vrp)[k_order_1[1]])
-    location = [] 
+    location = []
     demand = []
     for j in range(7, 7+dim):
         cur = input_prob[j].split()
@@ -157,7 +215,6 @@ def get_problem(location):
         ind=rows[i][0], val=rows[i][1]) for i in range(len(rows))]
     return dist_1dim, cus_depot, K, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping
 # location = [(50, 50),(0, 50),(0, 0),(50, 0),(50, 100),(100,100)]
-
 # init the decision variables
 
 
@@ -187,6 +244,13 @@ def calculate():
         my_prob = cplex.Cplex()
         generate_problem(my_obj, lowerbounds, upperbounds, var_types, var_names,
                          lin_expression, row_names, relation, right_side, my_prob)
+    
+        # add a callback
+        usercb = my_prob.register_callback(Usercb1)
+        userlz = my_prob.register_callback(LazyCallback)
+        usercb.a = 4396
+        userlz.a = 4396
+        
         my_prob.solve()
     except CplexError as exc:
         print(exc)
