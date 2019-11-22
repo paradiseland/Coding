@@ -130,3 +130,6 @@ blong
 case10.2.2 <- read.table("clipboard",header=T)
 GL <- factor(G)
 distinguish.bayes(case10.2.2,GL)
+
+t <- table(unlist(G))
+distinguish.bayes(case10.2.2,GL,p=t,newdata)
