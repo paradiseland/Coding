@@ -35,7 +35,7 @@ def interior_point(f, g, lambd, x, shape):
     x_delta = np.array([1, 1])
     for i in range(len(u)):
         uu = u[i]
-        while (x_delta > eps).all():
+        while (x_delta > eps).any():
             Sigma_lambda_Hg = 0
             Sigma_lambda_Gg = 0
             for i in range(m):
@@ -67,8 +67,8 @@ def interior_point(f, g, lambd, x, shape):
             x += alpha*x_delta
             lambd += alpha*lambda_delta
             print(matrix_left)
+            print(x_delta)
             print(x)
-            break
         return x
 
 
