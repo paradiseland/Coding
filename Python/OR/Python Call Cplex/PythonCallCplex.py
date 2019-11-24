@@ -81,7 +81,7 @@ def calculate():
     res = Result(is_solved=my_prob.solution.get_status(),
                  objective_value=my_prob.solution.get_objective_value(),
                  x_value=x, status=my_prob.solution.status[my_prob.solution.get_status()])
-    print("Problem:{0}\nOptimal Value:{1}\nSolution:{2}".format(my_prob.solution.status[res.is_solved],
+    print("\033[1;31;40m\tProblem:{0}\033[0m\n\033[1;32;40m\tOptimal Value:{1}\033[0m\n\033[1;33;40m\tSolution:{2}\033[0m".format(my_prob.solution.status[res.is_solved],
                                                                 res.obj_value, res.x_value))
     outputfile = "output.txt"
     with open(outputfile, 'a+') as out:
@@ -111,7 +111,7 @@ def calculate():
 
 if __name__ == "__main__":
     my_obj_type, my_obj_coe, my_lower_bounds, my_upper_bounds, type_of_variable, name_of_variable, tech_coe, sign_of_cons, right_of_cons = get_parameter(
-        'input1.txt')
+        'input2.txt')
     my_obj = Objective(my_obj_type, my_obj_coe)
     my_bounds = [my_lower_bounds, my_upper_bounds]
     type_of_var = type_of_variable[0]
