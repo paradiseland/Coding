@@ -100,7 +100,7 @@ if __name__ == "__main__":
     x = [-1] * nov 
     lambd = [1] * noc
     e = np.ones((1, noc))
-    u = np.array([1, 0.5, 0.2, 0.1])
+    u = np.array([1, 0.5, 0.2, 0.1,0.01])
     alpha = 1
     eps = 1e-2
     x,fff = interior_point(f, g, lambd, x, shape)
