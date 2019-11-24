@@ -66,9 +66,9 @@ def get_fg(file_path):
     moe = expr_process(moe, nov)
     my_obj_expr = expr_process(moe, nov)
     # f= 0
-    exec("def ff(x): return " + my_obj_expr)
-    f = []
-    exec("f.append(ff)")
+    exec("def f(x): return " + my_obj_expr)
+    ff = []
+    exec("ff.append(f)")
     for i in range(noc):
         gx[i] = expr_process(gx[i], nov)
         exec("def g_%d(x): return "%(i+1) + gx[i])
@@ -76,7 +76,7 @@ def get_fg(file_path):
     for i in range(noc):
         exec("g.append(g_" + str(i+1)+")")
     
-    return my_obj_type , f[0], g, shape,b
+    return my_obj_type , ff[0], g, shape,b
 
     
 
@@ -86,3 +86,4 @@ if __name__ == "__main__":
     my_obj_type , f, g, shape, b = get_fg(file_path)
     print(f(x))
     print(g)
+    print(my_obj_type,f,g,shape,b)
