@@ -19,15 +19,23 @@ from Result import Result
 EPS = 1e-6
 
 
-class LazyCallback(LazyConstraintCallback):
-    def __init__(self, env):
-        LazyConstraintCallback.__init__(self, env)
+def make_cuts(S):
+    cut = []
+    return cut
 
+
+class LazyCallback(LazyConstraintCallback):
+    def __init__(self, make_cuts, env):
+        LazyConstraintCallback.__init__(self, env)
+        
     def __call__(self):
         a =1
+        cur_x = self.get_values()
+        make_cuts(cur_x)
+        
         for i in range(4):
             print('*'*30)
-        cur_x = self.get_values()
+        
         for i in range(len(cur_x)):
             print(cur_x[i])
         print(self.get_values(1))
@@ -250,7 +258,7 @@ def calculate():
         userlz = my_prob.register_callback(LazyCallback)
         usercb.a = 4396
         userlz.a = 4396
-        
+
         my_prob.solve()
     except CplexError as exc:
         print(exc)
