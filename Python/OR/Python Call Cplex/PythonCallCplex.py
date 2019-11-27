@@ -60,6 +60,9 @@ def generate_problem(prob):
 
 
 def calculate():
+    """
+    genrate the problem and calculate the model.
+    """
     try:
         my_prob = cplex.Cplex()
         variables, cons = generate_problem(my_prob)
@@ -81,8 +84,9 @@ def calculate():
     res = Result(is_solved=my_prob.solution.get_status(),
                  objective_value=my_prob.solution.get_objective_value(),
                  x_value=x, status=my_prob.solution.status[my_prob.solution.get_status()])
-    print("\033[1;31;40m\tProblem:{0}\033[0m\n\033[1;32;40m\tOptimal Value:{1}\033[0m\n\033[1;33;40m\tSolution:{2}\033[0m".format(my_prob.solution.status[res.is_solved],
-                                                                res.obj_value, res.x_value))
+    
+    print("\033[1;31;40mProblem:{0}\033[0m\n\033[1;32;40mOptimal Value:{1}\033[0m\n\033[1;33;40mSolution:{2}\033[0m".format(my_prob.solution.status[res.is_solved], res.obj_value, res.x_value))
+
     outputfile = "output.txt"
     with open(outputfile, 'a+') as out:
         out.write("Solution status = {0}:{1}\n".format(my_prob.solution.get_status(),
@@ -94,24 +98,15 @@ def calculate():
     my_prob.write("cplex.lp")
 
 
-# if __name__ == "__main__":
-#     # input the problem
-#     # Objective
-#     my_obj = Objective('min', [2, -4])
-#     # Variable
-#     my_bounds = [[0, 0],
-#                  [float('inf'), float('inf')]]
-#     type_of_var = 'II'
-#     # Constraints
-#     rows = [[["x1", "x2"], [2, 1]],
-#             [["x1", "x2"], [-4, 4]]]
-#     relation = 'LL'
-#     right_side = [5, 5]
-#     calculate()
 
 if __name__ == "__main__":
-    my_obj_type, my_obj_coe, my_lower_bounds, my_upper_bounds, type_of_variable, name_of_variable, tech_coe, sign_of_cons, right_of_cons = get_parameter(
-        'input2.txt')
+    # file_name = "input.txt"
+    file_name = "input1.txt"
+    # file_name = "input2.txt"
+    # file_name = "input_vrp.txt"
+
+    my_obj_type, my_obj_coe, my_lower_bounds, my_upper_bounds, type_of_variable, name_of_variable, tech_coe, sign_of_cons, right_of_cons = get_parameter(file_name)
+
     my_obj = Objective(my_obj_type, my_obj_coe)
     my_bounds = [my_lower_bounds, my_upper_bounds]
     type_of_var = type_of_variable[0]
