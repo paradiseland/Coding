@@ -25,6 +25,7 @@ def interior_point(f, g, lambd, x, shape):
     """
     matrix manipulation & calculation.
     """
+
     n, m = shape
     f_Gradient = nd.Gradient(f)
     f_Hessian = nd.Hessian(f)
@@ -32,19 +33,22 @@ def interior_point(f, g, lambd, x, shape):
     g_Gradient = []
     fff = [0, 1]
     X = [tuple(x)]
+    x_delta = np.array([1, 1])
+    res = np.array([1, 1])
+    sign = [True]*len(u)
+    count_gross = 0
     for i in range(m):
         g_Hessian.append(nd.Hessian(g[i]))
         g_Gradient.append(nd.Gradient(g[i]))
-    x_delta = np.array([1, 1])
-    sign = [True]*len(u)
     for j in range(len(u)):
         # while (x_delta > eps).any():
         # while np.linalg.norm(x_delta,ord=2) > eps:
         # while np.linalg.norm(np.array(f_Gradient(x))) > eps:
         count = 0
-        while np.linalg.norm(x_delta, ord=2) >= eps[j] or sign[j]:
+        while np.linalg.norm(res, ord=2) >= eps[j] or sign[j]:
+            count_gross += 1
             count += 1
-            if count > 15:
+            if count > 20:
                 break
             else:
                 pass
@@ -73,11 +77,15 @@ def interior_point(f, g, lambd, x, shape):
             mr[n:n+m, 0] = [e[i]*u[j] for i in range(len(e))] - (np.dot(np.diag(lambd), np.array(
                 [b[i]-g[i](x) for i in range(m)]).reshape(-1, 1))).T
             # judge whether the matrix is invertible.
+            print("det of the matrix left is {}".format(np.linalg.det(ml)))
             if invertible(ml):
                 res = np.dot(mr.T, np.linalg.inv(ml))
             else:
                 print('we cannot get a invertiable matrix!')
-
+            if np.linalg.norm(res) > step_restraint[j]:
+                res = res/(np.linalg.norm(res)*10)
+            else:
+                pass
             # res_norm2 = np.linalg.norm(res)
             # direction = res/res_norm2
             x_delta = res[0, 0:n]
@@ -95,44 +103,45 @@ def interior_point(f, g, lambd, x, shape):
             print("\033[1;33;40mf(x) = {} \033[0m".format(f(x)))
             fff.append(f(x))
             X.append(tuple(x))
+        print("gross_iter: ",count_gross)
     return x, fff, X
 
 
-def plot_result(f, XX):
+def plot_result(x_0, f, XX):
     """
     plot the arg search path.
     """
     x_n, y_n = XX[-1]
     n = 256
-    x = np.linspace(-1, 1, n)
-    y = np.linspace(-1, 1, n)
+    x = np.linspace(1, x_n+1, n)
+    y = np.linspace(1, y_n+1, n)
     X, Y = np.meshgrid(x, y)
-    start = [-1,-1]
+    start = x_0
     xx = []
     yy = []
     for i in range(len(XX)):
         xx.append(XX[i][0])
         yy.append(XX[i][1])
-
+    f_xt = f(XX[-1])
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
+
     ax1.contour(X, Y, f([X, Y]), cmap=plt.cm.hot)
+    # ax1.contour(X, Y, f([X, Y]), [f_xt-i for i in u], colors = 'r')
     C = plt.contour(X, Y, f([X, Y]), 100)
     # plt.axis('off')
     ax1.clabel(C, inline=True, fontsize=10)
     # ax1.xlim(-1,1)
     # ax1.ylim(-1,1)
-    ax2 = ax1.twinx() 
-    
-    ax1.scatter(start[0],start[1],c='red',marker = "*")
-    ax1.text(start[0]+0.05,start[1],"initial solution",c='red')
-    ax1.plot(xx,yy,'b')
-    ax1.scatter(xx,yy,c='black',s=1)
+
+    ax1.scatter(start[0], start[1], c='red', marker="*")
+    ax1.text(start[0], start[1], "initial solution", c='red')
+    # ax1.plot(xx,yy,'b')
+    ax1.scatter(xx, yy, c='black', s=1)
     plt.show()
 
-
     # plt.contourf(X, Y, f([X, Y]), cmap=plt.cm.hot)
-    
+
     # C = plt.contour(X, Y, f([X, Y]), 100)
     # plt.clabel(C, inline=True, fontsize=12)
 
@@ -141,20 +150,21 @@ def plot_result(f, XX):
 
 
 if __name__ == "__main__":
-    file_path = "prob1.txt"
+    file_path = "prob10.txt"
     # file_path = "prob2.txt"
     my_obj_type, f, g, shape, b = get_fg(file_path)
     nov, noc = shape
-    x = [-1] * nov
+    x = [0] * nov
+    x_0 = x
     lambd = [1] * noc
     e = np.ones((1, noc))
-    u = np.array([0.4, 0.3, 0.2,0.15,0.1])
-    # u = [0.1]
+    u = np.array([1, 0.4, 0.15, 0.05, 0.01, 0.001])
     alpha = 0.8
-    # eps = [1e-4]
-    eps = [1e-6,1e-6,1e-6,1e-6,1e-3]
+    eps = [1e-4, 1e-4, 1e-6, 1e-6, 1e-6, 1e-8]
+    coe = [5, 3, 2, 1, 0.2, 0.1]
+    step_restraint = [i*j for i, j in zip(u, coe)]
     x, fff, X = interior_point(f, g, lambd, x, shape)
     xxx = np.arange(len(fff))
     plt.plot(xxx, fff, 'b')
-    plot_result(f, X)
+    # plot_result(x_0, f, X)
     plt.show()

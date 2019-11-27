@@ -1,7 +1,7 @@
 """
 read the .txt to get the problem.
 """
-
+import numpy as np
 
 def read_file(file_name):
     """
@@ -78,12 +78,23 @@ def get_fg(file_path):
     
     return my_obj_type , ff[0], g, shape,b
 
-    
+def get_RP1(b, shape):
+    m, n = shape
+    num_of_x = n
+    num_of_lambda = m
+    num_of_var = 2*m + n
+    def L(x):
+        return f(x[:n]) + sum([(b[i] - g[i](x))*x[n+i] for i in len(g)]) + sum([u*np.ln(x[m+n+i]) for i in range(num_of_lambda)])
+    pass
+    return L
 
 if __name__ == "__main__":
     file_path = "prob.txt"
     x = [1,1]
     my_obj_type , f, g, shape, b = get_fg(file_path)
+    u = 1
+    L = get_RP1
+    print(L)
     print(f(x))
     print(g)
     print(my_obj_type,f,g,shape,b)
