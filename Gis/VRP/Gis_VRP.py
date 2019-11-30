@@ -9,44 +9,142 @@ from cplex.exceptions import CplexError
 from cplex.callbacks import UserCutCallback, LazyConstraintCallback
 
 
-
 import matplotlib.pyplot as plt
 from Variable import Variable
 from Constraint import Constraint
 from Objective import Objective
 from Result import Result
 
-EPS = 1e-6
+eps = 1e-6
+
+def get_S(mapping,cur_solution):
+    """
+    from current solution get the S which may be a subtour.
+    """
+    # need to def num_of_customers & eps in advance.
+    # demovalues:
+    # [0.2, 0.2, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.8, 0.9]
+    # mapping = 
+    # {'01': 0, '02': 1, '03': 2, '04': 3, '05': 4, '12': 5, '13': 6, '14': 7, '15': 8, '23': 9, '24': 10, '25': 11, '34': 12, '35': 13, '45': 14}
+    supernode = []
+    tuple_of_connect = []
+    for k, v in mapping.items():
+        tuple_of_connect.append(tuple([int(i) for i in list(k)]))
+    dict_of_conn = dict(zip(tuple_of_connect, cur_solution))
+    # generate the list of supernodes.
+    no_conn_depot = [] # def a list of some customers who are not diirectly connected to depot.
+    for i in range(num_of_customers):
+        pass
+        if cur_solution[i] < eps:
+            no_conn_depot.append(tuple_of_connect[i])
+    no_conn_depot_conn = [] 
+    # get a list of dict like:
+    # [{(1, 3): 0, (2, 3): 0, (3, 4): 0.7, (3, 5): 0.8},
+    #  {(1, 4): 0, (2, 4): 0, (3, 4): 0.7, (4, 5): 0.9},
+    #  {(1, 5): 0, (2, 5): 0, (3, 5): 0.8, (4, 5): 0.9}]
+    for i in range(len(no_conn_depot)):
+        if no_conn_depot[i][0] == 0:
+            cur_j_conn = dict()
+            for q in range(1,num_of_customers+1):
+                if no_conn_depot[i][1] == q:
+                    pass
+                elif no_conn_depot[i][1] < q:
+                    cur_j_conn[(no_conn_depot[i][1], q)] = dict_of_conn[(no_conn_depot[i][1],q)]
+                else:
+                    cur_j_conn[(q, no_conn_depot[i][1])] = dict_of_conn[(q,no_conn_depot[i][1])]
+            no_conn_depot_conn.append(cur_j_conn)
+    cur_supernode = [[no_conn_depot[x][1]] for x in range(len(no_conn_depot))]
+    for i in range(len(no_conn_depot)):
+        cur_node = no_conn_depot[i][1]
+        for k,v in no_conn_depot_conn[i].items():
+            if v > eps:
+                if k[0] == cur_node:
+                    cur_supernode[i].append(k[1])
+                else:
+                    cur_supernode[i].append(k[0])
+    for i in range(len(no_conn_depot)):
+        list_of_set = []
+        list_of_set.append(set(cur_supernode[i]))
+    unique_set_supernode = []
+    for item in list_of_set:
+        if not item in unique_set_supernode:
+            unique_set_supernode.append(item)
+    num_of_S = len(unique_set_supernode)
+    S = []
+    for i in range(num_of_S):
+        S.append(list(unique_set_supernode[i]))
+    return S
 
 
-def make_cuts(S):
-    cut = []
-    return cut
+def make_cuts(S, Q):
+    """
+    from the S which may be a set of subtour, get a constraintor a cut.
+    the cut: X(δ(S)) ≥ 2γ(S)  
+    γ(S) is replaced by [q(s)/Q]
+    """
+    q_S = []
+    for i in range(len(S)):
+        temp = 0
+        for j in S[i]:
+            temp += demand[j]
+        # generate a list of q(S)
+        q_S.append(temp)
+    gamma_S = [i/Q for i in q_S]
+
+    var_deltaS = []
+    cus_dep = set(range(cus_depot))
+    # for a S, will get a (num_of_customers+depot - no_conn) * no_conn vars
+    for i in range(len(S)):
+        var_deltaS.append([])
+        for j in cus_dep-set(S[i]):
+            for k in set(S[i]):
+                if j < k:
+                    var_deltaS[i].append(mapping['%d%d'%(j,k)])
+                else:
+                    var_deltaS[i].append(mapping['%d%d'%(k,j)])
+    return var_deltaS, gamma_S
 
 
 class LazyCallback(LazyConstraintCallback):
-    def __init__(self, make_cuts, env):
+    """
+    This callback will be used within the cut loop that CPLEX calls 
+    at each node of the branch and cut algorithm.
+    It will be called once after CPLEX has ended its own cut generation loop 
+    so that the user can specify additional cuts to be added to the cut pool.
+    """
+
+    def __init__(self, env):
         LazyConstraintCallback.__init__(self, env)
-        
+        self.mapping = mapping
+
     def __call__(self):
-        a =1
-        cur_x = self.get_values()
-        make_cuts(cur_x)
-        
         for i in range(4):
             print('*'*30)
-        
-        for i in range(len(cur_x)):
-            print(cur_x[i])
-        print(self.get_values(1))
-        print(self.a)
         print("我成功了吗>>>????")
+        cur_solution = self.get_values()
+        S = get_S(mapping=mapping, cur_solution=cur_solution)
+        var_order, gamma_S = make_cuts(S, Q)
+        vars = []
+        for i in range(len(var_order)):
+            vars.append([])
+            for j in var_order[i]:
+                vars[i].append('x%d'%(j+1))
+        add_con_expression = [cplex.SparsePair(
+        ind=vars[i], val=[1]*len(vars[i])) for i in range(len(vars))]
+        sense = 'G'*len(vars)
+        rh = 2 * gamma_S
+        for i in range(len(vars)):
+            self.add(constraint=add_con_expression[i], sense='G', rhs=rh[i])
+            print("add a LazyConstraint:",add_con_expression[i])
 
 
+class MyCutCallback(UserCutCallback):
+    """
+    This callback will be used when CPLEX finds a new integer feasible solution 
+    and when CPLEX finds that the LP relaxation at the current node is unbounded.
+    """
 
-
-class Usercb1(UserCutCallback):
-    def __init__(self, env,):
+    def __init__(self, env):
         UserCutCallback.__init__(self, env)
 
     def __call__(self):
@@ -58,25 +156,6 @@ class Usercb1(UserCutCallback):
         for i in range(4):
             print('*'*30)
         print(self.a)
-
-        
-        # for j in self.locations:
-        #     isused = self.get_values(self.used[j])
-        #     served = sum(self.get_values(
-        #         [self.supply[c][j] for c in self.clients]))
-        #     if served > (len(self.clients) - 1.0) * isused + EPS:
-        #         print('Adding lazy constraint %s <= %d*used(%d)' %
-        #               (' + '.join(['supply(%d)(%d)' % (x, j) for x in self.clients]),
-        #                len(self.clients) - 1, j))
-        #         self.add(constraint=cplex.SparsePair(
-        #             [self.supply[c][j] for c in self.clients] + [self.used[j]],
-        #             [1.0] * len(self.clients) + [-(len(self.clients) - 1)]),
-        #             sense='L',
-        #             rhs=0.0)
-
-
-def make_cuts():
-    pass
 
 
 def get_parameter(file_name):
@@ -95,6 +174,7 @@ def get_parameter(file_name):
 
     type_of_vrp = input_prob[0].split()
     type_of_vrp = type_of_vrp[2]
+    Q = int(input_prob[5].split()[2])
     k_order_1 = re.search('-k', type_of_vrp).span()
     K = int(list(type_of_vrp)[k_order_1[1]])
     location = []
@@ -104,12 +184,12 @@ def get_parameter(file_name):
         del cur[0]
         cur_location = (int(cur[0]), int(cur[1]))
         location.append(cur_location)
-    for j in range(14, 14+dim):
+    for j in range(8+dim, 8+2*dim):
         cur_demand = input_prob[j].split()
         del cur_demand[0]
         cur_demand = int(cur_demand[0])
         demand.append(cur_demand)
-    return location, demand, K
+    return location, demand, K, Q
 
 
 def get_problem(location):
@@ -124,7 +204,7 @@ def get_problem(location):
     #         distance[i,j] = abs(location[i][0]-location[j][0])+abs(location[i][1]-location[j][1])
 
     # euclidean distance
-    distance = np.zeros((6, 6), dtype=np.int16)
+    distance = np.zeros((cus_depot,cus_depot), dtype=np.int32)
     for i in range(len(location)):
         for j in range(len(location)):
             distance[i, j] = ((location[i][0]-location[j][0])
@@ -252,13 +332,12 @@ def calculate():
         my_prob = cplex.Cplex()
         generate_problem(my_obj, lowerbounds, upperbounds, var_types, var_names,
                          lin_expression, row_names, relation, right_side, my_prob)
-    
-        # add a callback
-        usercb = my_prob.register_callback(Usercb1)
-        userlz = my_prob.register_callback(LazyCallback)
-        usercb.a = 4396
-        userlz.a = 4396
 
+        # add a UserCutCallback:
+        # usercb = my_prob.register_callback(MyCutCallback)
+        # # add a LazyConstraintCallback:
+        # userlz = my_prob.register_callback(LazyCallback)
+        # userlz.mapping = mapping
         my_prob.solve()
     except CplexError as exc:
         print(exc)
@@ -325,7 +404,9 @@ def plot_result(conn_lines):
 
 
 if __name__ == '__main__':
-    location, demand, K = get_parameter('A-n6-k2.vrp')
+    # file_name = 'A-n32-k5.vrp'
+    file_name = 'A-n6-k2.vrp'
+    location, demand, K, Q = get_parameter(file_name)
     dist_1dim, cus_depot, K, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping = get_problem(
         location)
     x = calculate()
