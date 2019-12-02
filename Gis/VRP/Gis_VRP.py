@@ -3,6 +3,7 @@ using Cplex-Python API to call Cplex to solve VRP problem.
 """
 import re
 import copy
+import math
 import numpy as np
 import cplex
 from cplex.exceptions import CplexError
@@ -24,19 +25,17 @@ def get_S(mapping,cur_solution):
     # need to def num_of_customers & eps in advance.
     # demovalues:
     # [0.2, 0.2, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0.7, 0.8, 0.9]
-    # mapping = 
-    # {'01': 0, '02': 1, '03': 2, '04': 3, '05': 4, '12': 5, '13': 6, '14': 7, '15': 8, '23': 9, '24': 10, '25': 11, '34': 12, '35': 13, '45': 14}
+    # mapping = {(0, 1):0, (0, 2):1, (0, 3):2, (0, 4):3, (0, 5):4, (1, 2):5, (1, 3):6, (1, 4):7, (1, 5):8, (2, 3):9, (2, 4):10, (2, 5):11, (3, 4):12, (3, 5):13, (4, 5):14}
     supernode = []
-    tuple_of_connect = []
-    for k, v in mapping.items():
-        tuple_of_connect.append(tuple([int(i) for i in list(k)]))
-    dict_of_conn = dict(zip(tuple_of_connect, cur_solution))
+    dict_of_conn = dict(zip(mapping, cur_solution))
     # generate the list of supernodes.
     no_conn_depot = [] # def a list of some customers who are not diirectly connected to depot.
-    for i in range(num_of_customers):
-        pass
-        if cur_solution[i] < eps:
-            no_conn_depot.append(tuple_of_connect[i])
+
+    for k, v in mapping.items():
+        if v <= num_of_customers - 1:
+            if dict_of_conn[k] < eps:
+                no_conn_depot.append(k)
+
     no_conn_depot_conn = [] 
     # get a list of dict like:
     # [{(1, 3): 0, (2, 3): 0, (3, 4): 0.7, (3, 5): 0.8},
@@ -62,8 +61,8 @@ def get_S(mapping,cur_solution):
                     cur_supernode[i].append(k[1])
                 else:
                     cur_supernode[i].append(k[0])
+    list_of_set = []
     for i in range(len(no_conn_depot)):
-        list_of_set = []
         list_of_set.append(set(cur_supernode[i]))
     unique_set_supernode = []
     for item in list_of_set:
@@ -89,7 +88,9 @@ def make_cuts(S, Q):
             temp += demand[j]
         # generate a list of q(S)
         q_S.append(temp)
-    gamma_S = [i/Q for i in q_S]
+    gamma_S = [math.ceil(i/Q)  for i in q_S]
+    # gamma_S = [i/Q  for i in q_S]
+
 
     var_deltaS = []
     cus_dep = set(range(cus_depot))
@@ -99,9 +100,9 @@ def make_cuts(S, Q):
         for j in cus_dep-set(S[i]):
             for k in set(S[i]):
                 if j < k:
-                    var_deltaS[i].append(mapping['%d%d'%(j,k)])
+                    var_deltaS[i].append(mapping[(j,k)])
                 else:
-                    var_deltaS[i].append(mapping['%d%d'%(k,j)])
+                    var_deltaS[i].append(mapping[(k,j)])
     return var_deltaS, gamma_S
 
 
@@ -122,7 +123,10 @@ class LazyCallback(LazyConstraintCallback):
             print('*'*30)
         print("我成功了吗>>>????")
         cur_solution = self.get_values()
+        connect = get_connect(cur_solution)
+        plot_result(connect)
         S = get_S(mapping=mapping, cur_solution=cur_solution)
+        print(S)
         var_order, gamma_S = make_cuts(S, Q)
         vars = []
         for i in range(len(var_order)):
@@ -132,7 +136,7 @@ class LazyCallback(LazyConstraintCallback):
         add_con_expression = [cplex.SparsePair(
         ind=vars[i], val=[1]*len(vars[i])) for i in range(len(vars))]
         sense = 'G'*len(vars)
-        rh = 2 * gamma_S
+        rh = [2*i for i in gamma_S]
         for i in range(len(vars)):
             self.add(constraint=add_con_expression[i], sense='G', rhs=rh[i])
             print("add a LazyConstraint:",add_con_expression[i])
@@ -148,14 +152,23 @@ class MyCutCallback(UserCutCallback):
         UserCutCallback.__init__(self, env)
 
     def __call__(self):
-        cur_x = self.get_values()
-        for i in range(len(cur_x)):
-            print(cur_x[i])
+        cur_solution = self.get_values()
+        S = get_S(mapping=mapping, cur_solution=cur_solution)
+        print(S)
+        var_order, gamma_S = make_cuts(S, Q)
+        vars = []
+        for i in range(len(var_order)):
+            vars.append([])
+            for j in var_order[i]:
+                vars[i].append('x%d'%(j+1))
+        add_con_expression = [cplex.SparsePair(
+        ind=vars[i], val=[1]*len(vars[i])) for i in range(len(vars))]
+        sense = 'G'*len(vars)
+        rh = 2 * gamma_S
+        for i in range(len(vars)):
+            self.add(cut=add_con_expression[i], sense='G', rhs=rh[i])
+            print("add a LazyConstraint:",add_con_expression[i])
 
-        print("我成功了吗>>>????")
-        for i in range(4):
-            print('*'*30)
-        print(self.a)
 
 
 def get_parameter(file_name):
@@ -222,7 +235,7 @@ def get_problem(location):
     rel = np.zeros((cus_depot, cus_depot), dtype=np.int16)
     x = 0
     dist_1dim = []
-    mapping = dict()  # get a dict like : mapping = {'01':0,'02':1,'03':2 ...}
+    mapping = dict()  # get a dict like : mapping = {(0,1):0,(0,2):1,(0,3):2 ...}
     ind1 = []  # ind1 each customer has remain decision_variables
     list_customer = list(range(cus_depot))
     for i in range(cus_depot):
@@ -233,7 +246,7 @@ def get_problem(location):
             variables_1dim.append(decision_variables[i][i+j+1])
             dist_1dim.append(float(distance[i][i+j+1]))
             rel[i][i+j+1] = x
-            mapping['%d%d' % (i, i+j+1)] = x
+            mapping[(i, i+j+1)] = x
             x += 1
 
     # for customer i
@@ -249,10 +262,10 @@ def get_problem(location):
         list_cur.remove(i)
         for j in list_cur:
             if j < i:
-                rows1[i-1][0].append(mapping['%d%d' % (j, i)])
+                rows1[i-1][0].append(mapping[(j, i)])
                 rows1[i-1][1].append(1)
             else:
-                rows1[i-1][0].append(mapping['%d%d' % (i, j)])
+                rows1[i-1][0].append(mapping[(i, j)])
                 rows1[i-1][1].append(1)
     '''
     [[['x01', 'x12', 'x13', 'x14', 'x15'], [1, 1, 1, 1, 1]],
@@ -301,7 +314,7 @@ def get_problem(location):
         var_types.append(variables_1dim[i].type)
     lin_expression = [cplex.SparsePair(
         ind=rows[i][0], val=rows[i][1]) for i in range(len(rows))]
-    return dist_1dim, cus_depot, K, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping
+    return dist_1dim, cus_depot, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping
 # location = [(50, 50),(0, 50),(0, 0),(50, 0),(50, 100),(100,100)]
 # init the decision variables
 
@@ -334,10 +347,10 @@ def calculate():
                          lin_expression, row_names, relation, right_side, my_prob)
 
         # add a UserCutCallback:
-        # usercb = my_prob.register_callback(MyCutCallback)
-        # # add a LazyConstraintCallback:
-        # userlz = my_prob.register_callback(LazyCallback)
-        # userlz.mapping = mapping
+        usercb = my_prob.register_callback(MyCutCallback)
+        # add a LazyConstraintCallback:
+        userlz = my_prob.register_callback(LazyCallback)
+        userlz.mapping = mapping
         my_prob.solve()
     except CplexError as exc:
         print(exc)
@@ -347,14 +360,14 @@ def calculate():
     print(my_prob.solution.status[my_prob.solution.get_status()])
     print("Solution value  = ", my_prob.solution.get_objective_value())
     x = my_prob.solution.get_values()
-    for j in range(num_cols):
-        print("Column %d:  Value = %10f " % (j, x[j]))
+    # for j in range(num_cols):
+    #     print("Column %d:  Value = %10f " % (j, x[j]))
     res = Result(is_solved=my_prob.solution.get_status(),
                  objective_value=my_prob.solution.get_objective_value(),
                  x_value=x, status=my_prob.solution.status[my_prob.solution.get_status()])
     print("Problem:{0}\nOptimal Value:{1}\nSolution:{2}".format(
         my_prob.solution.status[res.is_solved], res.obj_value, [int(res.x_value[i]) for i in range(len(res.x_value))]))
-    my_prob.write("vrp.lp")
+    # my_prob.write("vrp.lp")
     return x
 
 
@@ -365,13 +378,15 @@ def get_connect(x):
     """
     x = [int(x[i]) for i in range(len(x))]
     connection = []
+    connection_2 = []
     for k, value in zip(mapping.keys(), x):
         if value == 1:
             connection.append(k)
-    # to get the tuple list like [ (0,1),(0,2).....]
-    conn_lines = []
-    for i in connection:
-        conn_lines.append(tuple([int(i) for i in list(i)]))
+        elif value == 2:
+            connection.append(k)
+        else:
+            pass
+    conn_lines = connection
     return conn_lines
 
 
@@ -404,10 +419,10 @@ def plot_result(conn_lines):
 
 
 if __name__ == '__main__':
-    # file_name = 'A-n32-k5.vrp'
-    file_name = 'A-n6-k2.vrp'
+    file_name = 'A-n32-k5.vrp'
+    # file_name = 'A-n6-k2.vrp'
     location, demand, K, Q = get_parameter(file_name)
-    dist_1dim, cus_depot, K, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping = get_problem(
+    dist_1dim, cus_depot, num_of_customers, my_obj, lowerbounds, upperbounds, var_types, var_names, lin_expression, row_names, relation, right_side, mapping = get_problem(
         location)
     x = calculate()
     conn_lines = get_connect(x)
