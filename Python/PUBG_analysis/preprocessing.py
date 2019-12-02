@@ -5,6 +5,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+print("zz")
+print("gg")
+
+
+
 
 AGG = pd.read_csv("./pubg-match-deaths/aggregate/agg_match_stats_0.csv")
 
