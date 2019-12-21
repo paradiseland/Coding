@@ -343,6 +343,8 @@ def calculate():
     """
     try:
         my_prob = cplex.Cplex()
+        alg = my_prob.parameters.lpmethod.values
+        my_prob.parameters.lpmethod.set(alg.auto)
         generate_problem(my_obj, lowerbounds, upperbounds, var_types, var_names,
                          lin_expression, row_names, relation, right_side, my_prob)
 
