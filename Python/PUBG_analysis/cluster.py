@@ -21,15 +21,14 @@ pd.set_option('display.max_rows', None)
 # agg_selected = agg.sample(n=40000)
 
 # x = agg[['player_assists', 'player_dbno', 'player_dist_ride',
-agg_se = agg.loc[(agg["party_size"]==4)].copy()
+agg_se = agg.loc[(agg["party_size"]==2)].copy()
 x = agg_se[['player_assists', 'player_dbno', 'player_dist_ride', 'player_dist_walk','player_dmg', 'player_kills', 'player_survive_time']].copy()
 x_correlaton = x.corr()
 
 
-
-x2 = x.apply(lambda x:(x- x.mean())/x.std(), axis = 0)
-# x2 = x
-x_T = x2.T
+# x = x.apply (lambda x: (x-x.min())/(x.max()-x.min()))     
+x = x.apply(lambda x:(x- x.mean())/x.std(), axis = 0)
+x_T = x.T
 
 cntr, u, u_0, d, obj_value, num_of_iter, fpc = sc.cmeans(data=x_T, c=3, m=2, maxiter=100, error=0.005)
 
@@ -108,4 +107,4 @@ def plot_cluster(stat, ite):
     ax1.set_xticklabels(ite)
     plt.show()
 
-# plot_cluster(stat, items)
+plot_cluster(stat, items)
