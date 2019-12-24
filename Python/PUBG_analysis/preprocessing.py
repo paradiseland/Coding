@@ -4,6 +4,7 @@ preprocess the PUBG data.
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 
 
 # read the source data.
@@ -32,6 +33,7 @@ AGG.info()
 AGG.columns()
 
 
+AGG[AGG.isnull().values==True]
 # del na rows
 AGG = AGG.dropna(how='any')
 
@@ -55,6 +57,10 @@ AGG_Selected['won'] = AGG_Selected['team_placement'] == 1
 # add a column of drove or not
 AGG_Selected['drove'] = AGG_Selected['player_dist_ride'] != 0
 # delete the inactive players. 5412 deleted.
+
+AGG[AGG["player_dist_walk"]==0].sort_values(by=["team_placement"], ascending=True)
+
+
 AGG_Selected = AGG_Selected.drop(
     AGG_Selected[AGG_Selected['player_dist_walk'] == 0].index)
 # del the match mode
@@ -77,6 +83,8 @@ DEATH_Selected.dropna(how='any')
 # add a column of kill distance.the distance or coordination unit is dm!
 DEATH_Selected['kill_distance'] = np.sqrt((DEATH_Selected['killer_position_x']-DEATH_Selected['victim_position_x'])**2+(
     DEATH_Selected['killer_position_y']-DEATH_Selected['victim_position_y'])**2)
+
+DEATH_Selected.sort_values(by=["kill_distance", "killer_placement"], ascending=(False,True))
 # 64
 DEATH_Selected = DEATH_Selected.drop(
     DEATH_Selected[DEATH_Selected['kill_distance'] >= 100000].index)
@@ -91,3 +99,29 @@ DEATH_Selected.to_csv('death1.csv')
 # REread the file.
 AGG = pd.read_csv("agg1.csv")
 DEATH = pd.read_csv("death1.csv")
+
+
+
+
+DEATH_WAIGUA = DEATH_Selected[DEATH_Selected["killer_name"].str.contains("WGqun")]
+
+
+
+# 抽样后的一致性检验
+t = list(AGG.columns)[4:]
+t.remove("player_name")
+res = []
+for i in t:
+    res.append(stats.ks_2samp(AGG[i],AGG_sample[i]))
+res
+#  Ks_2sampResult(statistic=0.14083051083316567, pvalue=0.0),
+#  Ks_2sampResult(statistic=0.013080178438887757, pvalue=8.032885864758073e-61),
+#  Ks_2sampResult(statistic=0.05358295631209453, pvalue=0.0),
+#  Ks_2sampResult(statistic=0.010770643426416315, pvalue=2.2385046991557447e-41),
+#  Ks_2sampResult(statistic=0.018413789604180275, pvalue=4.056448934321943e-120),
+#  Ks_2sampResult(statistic=0.011138392169116051, pvalue=3.204661905763157e-44),
+#  Ks_2sampResult(statistic=0.005616366247466531, pvalue=1.4654242657900183e-11),
+#  Ks_2sampResult(statistic=0.016155806673406214, pvalue=1.4552095412923636e-92),
+#  Ks_2sampResult(statistic=0.14083953656856996, pvalue=0.0),
+#  Ks_2sampResult(statistic=0.064345474843154, pvalue=0.0)
+# ['party_size','player_assists','player_dbno','player_dist_ride','player_dist_walk','player_dmg','player_kills','player_survive_time','team_id','team_placement']
