@@ -6,6 +6,14 @@ def plot(chromosome, inse, location):
     plot the result in a figure.
     The scale is small, so we see line in lon&lat as straight line.
     """
+    # ['bmh', 'classic', 'dark_background', 'fast', 
+    # 'fivethirtyeight', 'ggplot', 'grayscale', 'seaborn-bright', 
+    # 'seaborn-colorblind', 'seaborn-dark-palette', 'seaborn-dark', 'seaborn-darkgrid',
+    # 'seaborn-deep', 'seaborn-muted', 'seaborn-notebook', 'seaborn-paper', 
+    # 'seaborn-pastel', 'seaborn-poster', 'seaborn-talk', 'seaborn-ticks',
+    # 'seaborn-white', 'seaborn-whitegrid', 'seaborn', 'Solarize_Light2', 
+    # 'tableau-colorblind10', '_classic_test']
+    plt.style.use('bmh')
     Tour = []
     v_0 = 0
     for i, v in enumerate(inse+[len(location) - 1]):

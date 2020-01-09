@@ -178,9 +178,61 @@ def crossover(population, pc1, pc2, fitness):
                 new_p2[0, 0:m] = p1_left[NUM_OF_CUSTOMER-n:]
                 Children[2*i] = new_p1
                 Children[2*i+1] = new_p2
+            else:
+                Children[2*i] = population[P1[i]]
+                Children[2*i+1] = population[P2[i]]
         else:
-            Children[2*i] = population[P1[i]]
-            Children[2*i+1] = population[P2[i]]
+            rand01 = random.random()
+            pc = pc1
+            if rand01 < pc:
+                new_p1 = np.zeros((1, NUM_OF_CUSTOMER), dtype=np.int16)
+                new_p2 = np.zeros((1, NUM_OF_CUSTOMER), dtype=np.int16)
+                tmp = list(range(NUM_OF_CUSTOMER))
+                m, n = np.random.choice(tmp, 2)
+                if m > n:
+                    m, n = n, m
+
+                new_p1[0, m:n] = population[P1[i]][m:n]
+                new_p2[0, m:n] = population[P2[i]][m:n]
+
+                index_p1_chosen = []
+                index_p2_chosen = []
+                for j in range(m, n):
+                    index_p1_chosen.append(population[P1[i]][j])
+                    index_p2_chosen.append(population[P2[i]][j])
+
+                p1_left = copy.deepcopy(population[P1[i]].tolist())
+                p2_left = copy.deepcopy(population[P2[i]].tolist())
+
+                for j in index_p2_chosen:
+                    p1_left.remove(j)
+                for j in index_p1_chosen:
+                    p2_left.remove(j)
+
+                for j in population[P2[i], list(range(n, NUM_OF_CUSTOMER))+list(range(NUM_OF_CUSTOMER))]:
+                    if j not in population[P1[i]][m:n]:
+                        p2_insert_first_element = j
+                        break
+                for j in population[P1[i], list(range(n, NUM_OF_CUSTOMER))+list(range(NUM_OF_CUSTOMER))]:
+                    if j not in population[P2[i]][m:n]:
+                        p1_insert_first_element = j
+                        break
+                p1_insert_first_index = p1_left.index(p1_insert_first_element)
+                p2_insert_first_index = p2_left.index(p2_insert_first_element)
+                p1_left = p1_left[p1_insert_first_index:] + \
+                    p1_left[:p1_insert_first_index]
+                p2_left = p2_left[p2_insert_first_index:] + \
+                    p2_left[:p2_insert_first_index]
+                new_p1[0, n:NUM_OF_CUSTOMER] = p2_left[:NUM_OF_CUSTOMER-n]
+                new_p1[0, 0:m] = p2_left[NUM_OF_CUSTOMER-n:]
+                new_p2[0, n:NUM_OF_CUSTOMER] = p1_left[:NUM_OF_CUSTOMER-n]
+                new_p2[0, 0:m] = p1_left[NUM_OF_CUSTOMER-n:]
+                Children[2*i] = new_p1
+                Children[2*i+1] = new_p2
+            else:
+                Children[2*i] = population[P1[i]]
+                Children[2*i+1] = population[P2[i]]
+
             
         
     # tmp = list(range(POPULATION_SIZE))
@@ -225,7 +277,7 @@ def get_solution(chromosome, inser):
     return Tour
 
 def GA(infomation, trunk, dist):
-    iteration = 100
+    iteration = 2000
     pc1 = 0.9
     pc2 = 0.6
     pm = 0.2
@@ -253,6 +305,7 @@ def GA(infomation, trunk, dist):
     file_handle.write('\n\nmin:{} km'.format(Fit[-1])+'\n'+str(Tour))
     file_handle.close()
     name = 'n={}_converage_min={}.jpg'.format(len(dist)-1, Fit[-1])
+    plt.style.use('Solarize_Light2')
     plt.plot(Fit)
     plt.savefig("E:\\SIGS\\Courses\\物流地理信息系统\\作业\\期末作业\\GA_result\\n={}\\".format(len(dist)-1)+name)
     plt.clf()
@@ -273,7 +326,7 @@ if __name__ == "__main__":
     
     file_name = "assignment.xls"
     info, trunks = get_parameters(file_name)
-    prob = 3
+    prob = 2
     infomation = info[prob]
     trunk = trunks[0]
     dist = get_distance(infomation["location"])
