@@ -1,0 +1,13 @@
+SUPPLY
+Sunnyvale 45
+Dublin 120
+Bangkok 95
+DEMAND
+Amarillo 80
+Teaneck 78
+Chichago 47
+Sioux_Falls 55
+tech_coe
+250 420 380 280
+1280 990 1440 1520
+1550 1420 1660 1730
