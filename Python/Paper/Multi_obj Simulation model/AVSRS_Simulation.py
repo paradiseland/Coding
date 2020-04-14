@@ -101,6 +101,8 @@ class Vehicle():
 
     def drive(self, env):
         pass
+
+    
 class Storage():
     def __init__(self):
         self.time = 0
@@ -130,7 +132,7 @@ def Store(place_store, place_vehicle):
     # determine the place to store
 
     # get a avilable & closest vehicle
-    # place[Z, A, T , B]
+    # place[A_Z, T, B, oneside]
 
     # type of storage place & vehicle initial place :[0, 0]. [0, N], [N, N]
     journey_vehicle = 0
