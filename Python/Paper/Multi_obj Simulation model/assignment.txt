@@ -1,0 +1,29 @@
+4.20
+
+
+1.cycle time & electricity
+2.finish the utilization of vehicles and Lift.
+Utilization: occupied time / simulation time
+
+
+
+
+4.21
+
+Energy consumption into the model.
+
+
+
+
+
+NOTE:
+Critical performance measures:
+average cycle time per transaction V.S.  electricity consumption per transaction
+
+
+[U_V & U_L] , [E_C] -> has subtracted regeneration.
+
+DOE: warehouse shape & velocity profiles
+
+    T: 25, 15, 5
+    v-a: 3-2, 2-1
