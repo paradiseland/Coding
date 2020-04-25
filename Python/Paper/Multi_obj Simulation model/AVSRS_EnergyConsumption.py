@@ -86,8 +86,7 @@ class Warehouse:
        self.B = B
        self.sides = sides
        self.shape = (self.A_Z, self.T, self.B, self.sides)
-       self.coe_length: (A, T, B) = dict(
-           zip(['width_of_aisle', 'height_tier', 'bay'], [width_of_aisle, height_tier, bay]))
+       self.coe_length: (A, T, B) = dict(zip(['width_of_aisle', 'height_tier', 'bay'], [width_of_aisle, height_tier, bay]))
        self.containers = self.A_Z*self.T*self.B*self.sides
        self.record = np.ones(self.shape)
        self.num_of_transactions = 0
@@ -162,10 +161,11 @@ class Vehicle:
     def get_transport_time_vtop(self, Dis):
         # two scenario: place to lift; lift to place.
         # return t1 & t_2
-        if Dis < self.D_sign:
+        if Dis <= self.D_sign:
             return (Dis/self.ACC)**.5, 0, (self.ACC*Dis)**.5
         else:
-            return self.V_MAX/self.ACC, (Dis - self.V_MAX**2/self.ACC)/self.V_MAX, self.V_MAX
+            # 2*t1+t2 = Dis/vmax + vmax/acc
+            return self.V_MAX/self.ACC, (Dis - self.D_sign)/self.V_MAX, self.V_MAX
 
     def get_energy(self, Dis):
         """
@@ -252,10 +252,10 @@ class Lift:
         Compute work of a single journey 
         """
         t1, t2, v_top = self.get_transport_time_vtop(Dis)
-        W_VA = ((self.G + self.G/g*self.ACC*f_r) * v_top / (1000*eta))*t1/3600
-        W_VD = ((self.G/g*self.DEC*f_r + self.G) * v_top / (1000*eta))*t1/3600
-        W_VC = self.G*v_top/(1000*eta)*t2/3600
-        return W_VA + W_VD + W_VC
+        W_LA = ((self.G + self.G/g*self.ACC*f_r) * v_top / (1000*eta))*t1/3600
+        W_LD = ((self.G/g*self.DEC*f_r + self.G) * v_top / (1000*eta))*t1/3600
+        W_LC = self.G*v_top/(1000*eta)*t2/3600
+        return W_LA + W_LD + W_LC
 
     def regenerate_energy(self, Dis):
         t1, t2, v_top = self.get_transport_time_vtop(Dis)
@@ -315,8 +315,7 @@ class Simulation:
         """
 
         timepoint_arrive = env.now
-        print("{:10.2f}, \033[1;31m{}\33[0m  arrives.".format(
-            timepoint_arrive, name))
+        print("{:10.2f}, \033[1;31m{}\33[0m  arrives.".format(timepoint_arrive, name))
         yield env.timeout(0)
 
         dest = rand_place_available(warehouse)
@@ -349,28 +348,28 @@ class Simulation:
 
             if fleet.vehicles[v].place[1] > 1:
                 # seized vehicle is on gt 1 tier.
+                # First request lift than get to lift location.
                 with lift_re.request() as req_lift:
                     yield req_lift
                     lift.busy()
                     label_l_start = env.now
 
                     # veh -> lift :{1.to [0]bay,2.->IO[Aisle]}
-                    trans_length = fleet.vehicles[v].place[2] * warehouse.coe_length['bay'] + abs(fleet.vehicles[v].place[0]-IO[0]) * warehouse.coe_length['width_of_aisle']
-                    travel_to_lift = fleet.vehicles[v].get_transport_time(
-                        trans_length)
+                    trans_length = [fleet.vehicles[v].place[2] * warehouse.coe_length['bay'], abs(fleet.vehicles[v].place[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
+                    travel_to_lift = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length])
 
-                    lift_height = abs(
-                        lift.tier - fleet.vehicles[v].place[1]) * warehouse.coe_length['height_tier']
+                    lift_height = abs(lift.tier - fleet.vehicles[v].place[1]) * warehouse.coe_length['height_tier']
                     lift_to_vehicle_tier = lift.get_transport_time(lift_height)
                     meet_time = max(travel_to_lift, lift_to_vehicle_tier)
+
                     yield env.timeout(meet_time)
                     print(
                         "{:10.2f}, \033[1;31m lift \33[0m meets the vehicle.".format(env.now))
 
-                    lift_height = (fleet.vehicles[v].place[0]-1) * warehouse.coe_length['height_tier']
+                    lift_height = (fleet.vehicles[v].place[0]-IO[1]) * warehouse.coe_length['height_tier']
                     travel_to_IO = lift.get_transport_time(lift_height)
 
-                    yield env.timeout(travel_to_IO)
+                    yield env.timeout(travel_to_IO)   
                     print(
                         "{:10.2f}, \033[1;33m lift\33[0m travels to I/O. ".format(env.now))
 
@@ -387,8 +386,8 @@ class Simulation:
                 lift.record_consumption()
                 lift.release(dest, env.now-label_l_start)
                 # get out the 'with', release the RESOURCE lift.
-                trans_length = dest[2] * warehouse.coe_length['bay']
-                travel_to_storage = fleet.vehicles[v].get_transport_time(trans_length)
+                trans_length = [dest[2] * warehouse.coe_length['bay'], abs(dest[0]-IO[0])*warehouse.coe_length['width_of_aisle']]
+                travel_to_storage = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length])
                 yield env.timeout(travel_to_storage)
                 print("{:10.2f}, \033[1;33m vehicle {} \33[0m travels to storage. ".format(env.now, v+1))
 
@@ -414,18 +413,17 @@ class Simulation:
                         lift.record_consumption()
                         lift.release(dest, env.now - label_l_start)
 
-                    trans_length = dest[2] * warehouse.coe_length['bay'] + abs(dest[0]-IO[0])*warehouse.coe_length['width_of_aisle']
-                    travel_to_storage = fleet.vehicles[v].get_transport_time(trans_length)
+                    trans_length = [dest[2] * warehouse.coe_length['bay'], abs(dest[0]-IO[0])*warehouse.coe_length['width_of_aisle']]
+                    travel_to_storage = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length])
                     yield env.timeout(travel_to_storage)
                     print("{:10.2f}, \033[1;33m vehicle {} \33[0m travels to storage. ".format(
                         env.now, v+1))
 
                 else:
                     # vehicle is in tier 1 other place.
-                    travel_length = fleet.vehicles[v].place[2] * warehouse.coe_length['bay'] + abs(
-                       fleet.vehicles[v].place[0] -IO[0])*warehouse.coe_length['width_of_aisle']
-                    travel_to_IO = fleet.vehicles[v].get_transport_time(
-                        travel_length)
+                    travel_length = [fleet.vehicles[v].place[2] * warehouse.coe_length['bay'], abs(fleet.vehicles[v].place[0] -IO[0])*warehouse.coe_length['width_of_aisle']]
+                    travel_to_IO = sum([fleet.vehicles[v].get_transport_time(t) for t in travel_length])
+
                     yield env.timeout(travel_to_IO)
                     print(
                         "{:10.2f}, \033[1;35m vehicle {} \33[0m travels to I/O. ".format(env.now, v+1))
@@ -448,9 +446,8 @@ class Simulation:
                         lift.release(dest, env.now-label_l_start)
                         
 
-                    trans_length = dest[2] * warehouse.coe_length['bay'] + abs(dest[0]-IO[0])*warehouse.coe_length['width_of_aisle']
-                    travel_to_storage = fleet.vehicles[v].get_transport_time(
-                        trans_length)
+                    trans_length = [dest[2] * warehouse.coe_length['bay'], abs(dest[0]-IO[0])*warehouse.coe_length['width_of_aisle']]
+                    travel_to_storage = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length])
                     yield env.timeout(travel_to_storage)
                     print("{:10.2f}, \033[1;33m vehicle {} \33[0m travels to storage. ".format(
                         env.now, v+1))
@@ -525,22 +522,24 @@ class Simulation:
                 # load is at the same tier of the chosen vehicle.
                 """
                 Vehcile and Lift how to realize SYNC?
-                min(t_1, t_2)
+                max(t_1, t_2)
                 """
-                trans_length1 = abs(fleet.vehicles[v].place[2]-load[2]) * warehouse.coe_length['bay'] + abs(
-                    fleet.vehicles[v].place[0]-load[0]) * warehouse.coe_length['width_of_aisle']
-                travel_to_retrieval = fleet.vehicles[v].get_transport_time(
-                    trans_length1)
+                if fleet.vehicles[v].place[0] == load[0]:
+                    trans_length1 = abs(fleet.vehicles[v].place[2]-load[2]) * warehouse.coe_length['bay']
+                    travel_to_retrieval = fleet.vehicles[v].get_transport_time(trans_length1)
+                else:
+                    trans_length1 = [fleet.vehicles[v].place[2]*warehouse.coe_length['bay'], -load[2]*warehouse.coe_length['bay'], abs(fleet.vehicles[v].place[0]-load[0])*warehouse.coe_length['width_of_aisle']]
+                    travel_to_retrieval = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length1])
 
-                travel_length2 = load[2] * warehouse. coe_length['bay'] + abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']
-                travel_to_lift = fleet.vehicles[v].get_transport_time(
-                    travel_length2)
+                travel_length2 = [load[2] * warehouse. coe_length['bay'], abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
+                travel_to_lift = sum([fleet.vehicles[v].get_transport_time(t) for t in travel_length2])
                 travel_horizon = travel_to_retrieval + travel_to_lift
 
                 if load[1] == IO[1]:
                     yield env.timeout(travel_to_lift)
 
                 else:
+
                     with lift_re.request() as lift_req:
                         yield lift_req
                         lift.busy()
@@ -553,18 +552,17 @@ class Simulation:
                         lift_height = (load[1]-IO[1]) * warehouse.coe_length['height_tier']
                         lift_to_IO = lift.get_transport_time(lift_height)
                         yield env.timeout(lift_to_IO)
-                        lift.record_consumption()
+                    lift.record_consumption()
                     lift.release(IO, env.now-label_l_start)
             else:
                 # tier of seized vehicle is different from that of retrieval.
                 # seized vehicle travels to lift.
-                travel_length = fleet.vehicles[v].place[2] * warehouse. coe_length['bay'] + abs(fleet.vehicles[v].place[0]-IO[0]) * warehouse.coe_length['width_of_aisle']
-                travel_to_lift = fleet.vehicles[v].get_transport_time(travel_length)
+                travel_length = [fleet.vehicles[v].place[2] * warehouse. coe_length['bay'], abs(fleet.vehicles[v].place[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
+                travel_to_lift = sum([fleet.vehicles[v].get_transport_time(t) for t in travel_length])
                 with lift_re.request() as lift_req:
                     yield lift_req
                     lift.busy()
                     label_l_start = env.now
-
 
                     lift_height = abs(lift.tier - fleet.vehicles[v].place[1]) * warehouse.coe_length['height_tier']
                     travel_veh_tier = lift.get_transport_time(lift_height)
@@ -572,8 +570,12 @@ class Simulation:
                     meet_time = max(travel_to_lift, travel_veh_tier)
                     yield env.timeout(meet_time)
 
-                    travel_length = load[2] * warehouse.coe_length['bay'] + abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']
-                    travel_to_retrieval = fleet.vehicles[v].get_transport_time(travel_length)
+                    lift_height = abs(fleet.vehicles[v].place[1] - load[1]) * warehouse.coe_length['height_tier']
+                    travel_to_load_tier = lift.get_transport_time(lift_height)
+                    yield env.timeout(travel_to_load_tier)
+
+                    travel_length = [load[2] * warehouse.coe_length['bay'], abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
+                    travel_to_retrieval = sum([fleet.vehicles[v].get_transport_time(t) for t in travel_length])
                     yield env.timeout(travel_to_retrieval)
                     print("{:10.2f},vehicle \033[1;34m {} \33[0m travels to retrieval.".format(env.now, v+1))
                     yield env.timeout(travel_to_retrieval)
@@ -582,7 +584,7 @@ class Simulation:
                     lift_height = (load[1]-IO[1]) * warehouse.coe_length['height_tier']
                     lift_to_IO = lift.get_transport_time(lift_height)
                     yield env.timeout(lift_to_IO)
-                    lift.record_consumption()
+                lift.record_consumption()
                 lift.release(IO, env.now-label_l_start)
         fleet.vehicles[v].record_consumption()
         fleet.vehicles[v].release(IO, env.now - label_v_start)
@@ -591,21 +593,18 @@ class Simulation:
         warehouse.retrieve(tuple([i-1 for i in load]))
 
 
-if __name__ == "__main__":
-    # A = 4
-    # A_Z = 3
-    # T = 4
-    # B = 6
-    
-    # lambda_all = 100/3600
-    # lambda_Z = lambda_all / A   
+if __name__ == "__main__": 
     warehouse_file = 'Configuration.txt'
     va_file = 'Velocity_profile.txt'
     wareh = get_config('Configuration.txt')
     v_a = get_velcity_profile('Velocity_profile.txt')
     sim_config = get_simulation(wareh, v_a)
-    Simlation_time = 3600*8*5
-    for k_th, config in enumerate([sim_config[32]]):
+    # Simlation_time = 3600*8*5*4*12
+    Simlation_time = 3600*8
+    num_of_replication = 10
+    # Simulation_time = 2*12*30*8*3600
+    f = open('AVSRS_Simulation_Result.txt', 'w')
+    for k_th, config in enumerate([sim_config[5]]):
         A, T, B, containers, A_Z, lambda_Z, v_v, v_a, l_v, l_a= config
         lambda_Z /= 3600
         sides = 2
@@ -633,5 +632,11 @@ if __name__ == "__main__":
         sim = Simulation(env, lift, fleet, lift_re, veh_re, warehouse)
         env.run(until=Simlation_time)
 
-        print(f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}')
-        print('\n\n\nUL:{:.3f}, UV:{:.3f}, EC:{:.3f}\n\n'.format(sim.U_L, sim.U_V, sim.E_C))
+        
+        # print(f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}')
+        # print('\n\n\nUL:{:.3f}, UV:{:.3f}, EC:{:.3f}\n\n'.format(sim.U_L, sim.U_V, sim.E_C))
+        conf = f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}'
+        res = '\nUL:{:.3f}, UV:{:.3f}, EC:{:.3f}\n\n'.format(sim.U_L, sim.U_V, sim.E_C)
+        f.write(conf)
+        f.write(res)
+    f.close()
