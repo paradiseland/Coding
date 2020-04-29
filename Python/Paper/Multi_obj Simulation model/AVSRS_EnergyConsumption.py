@@ -14,9 +14,9 @@ def rand_place_available(warehouse) -> list:
     """
     Randomly storaged,  generating a randomly available place to storage by considering shape of warehouse.
     """
-    # 1: vacant; 0: occupied
-    st_place = 0
-    while st_place == 0:
+    # True: vacant; False: occupied
+    st_place = False
+    while st_place == False:
         tmp = [rd(0, i-1) for i in warehouse.shape]
         st_place = warehouse.record[tuple(tmp)]
     return [i+1 for i in tmp]
@@ -26,15 +26,11 @@ def rand_place_loaded(warehouse) -> list:
     """
     Randomly retrieval,  generating a randomly loaded place to retrieve by considering shape of warehouse.
     """
-    # i-dim
-    record_1d = warehouse.record.reshape(warehouse.containers)
-    loaded_index: tuple = np.where(record_1d == 0)
-    choose = np.random.choice(loaded_index[0], 1)
-    record_1d[choose[0]] = -1
-    record_nd = record_1d.reshape(warehouse.shape)
-    tmp = np.where(record_nd == -1)
-
-    return [tmp[i][0]+1 for i in range(len(tmp))]
+    st_place = True
+    while st_place == True:
+        tmp = [rd(0, i-1) for i in warehouse.shape]
+        st_place = warehouse.record[tuple(tmp)]
+    return [i+1 for i in tmp]
 
 
 def get_available_closest(warehouse, lift, fleet) -> 'index of chosen':
@@ -88,34 +84,34 @@ class Warehouse:
        self.shape = (self.A_Z, self.T, self.B, self.sides)
        self.coe_length: (A, T, B) = dict(zip(['width_of_aisle', 'height_tier', 'bay'], [width_of_aisle, height_tier, bay]))
        self.containers = self.A_Z*self.T*self.B*self.sides
-       self.record = np.ones(self.shape)
+       self.record = np.empty(1)
+       self.init_warehouse()
        self.num_of_transactions = 0
        self.EC = []
+       
+    
+    def init_warehouse(self):
+        tmp = np.ones(self.containers, dtype=np.bool)
+        ind = np.arange(self.containers)
+        random_choose = np.random.choice(ind, int(self.containers/2), replace=False).tolist()
+        for i in random_choose:
+            tmp[i] = False
+        self.record = tmp.reshape(self.shape)
 
     @property
     def available_num(self):
-        return sum(sum(self.record.reshape((1, -1)) == 1))
+        return np.sum(self.record, axis=(range(len(self.shape))))
 
-    def store(self, place: tuple):
-        self.record[place] = 0
+    def store(self, place):
+        self.record[place] = False
         self.num_of_transactions += 1
 
     def retrieve(self, place: tuple):
-        self.record[place] = 1
+        self.record[place] = True
         self.num_of_transactions += 1
 
     def record_consuption_tranaction(self, vehicle, lift):
         self.EC.append(vehicle.energy + lift.energy)
-
-
-    def init_warehouse(self):
-        tmp = np.ones(self.containers)
-        ind = np.arange(self.containers)
-        random_choose = np.random.choice(
-            ind, int(self.containers/2), replace=False).tolist()
-        for i in random_choose:
-            tmp[i] = 0
-        self.record = tmp.reshape(self.shape)
     
     @property
     def get_EC(self):
@@ -283,7 +279,7 @@ class Simulation:
     def U_L(self):
         return sum(lift.busytime)/Simlation_time
 
-
+    
     def source_storage(self, env, lift, fleet, lift_re, veh_re):
         """
         In simulation time, keeping register [Storage] process into the simulation environment.
@@ -494,6 +490,7 @@ class Simulation:
         load = rand_place_loaded(warehouse)
         print(
             f'            place of  \033[1;32m{name}\33[0m is at{load}, place chosen state: {int(warehouse.record[tuple([i-1 for i in load])])} .')
+        warehouse.retrieve(tuple([i-1 for i in load]))
 
         len_of_queue = [len(i.users) for i in veh_re]
         num_of_busy = [i > 0 for i in len_of_queue]
@@ -528,7 +525,7 @@ class Simulation:
                     trans_length1 = abs(fleet.vehicles[v].place[2]-load[2]) * warehouse.coe_length['bay']
                     travel_to_retrieval = fleet.vehicles[v].get_transport_time(trans_length1)
                 else:
-                    trans_length1 = [fleet.vehicles[v].place[2]*warehouse.coe_length['bay'], -load[2]*warehouse.coe_length['bay'], abs(fleet.vehicles[v].place[0]-load[0])*warehouse.coe_length['width_of_aisle']]
+                    trans_length1 = [fleet.vehicles[v].place[2]*warehouse.coe_length['bay'], load[2]*warehouse.coe_length['bay'], abs(fleet.vehicles[v].place[0]-load[0])*warehouse.coe_length['width_of_aisle']]
                     travel_to_retrieval = sum([fleet.vehicles[v].get_transport_time(t) for t in trans_length1])
 
                 travel_length2 = [load[2] * warehouse. coe_length['bay'], abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
@@ -599,12 +596,14 @@ if __name__ == "__main__":
     wareh = get_config('Configuration.txt')
     v_a = get_velcity_profile('Velocity_profile.txt')
     sim_config = get_simulation(wareh, v_a)
-    # Simlation_time = 3600*8*5*4*12
-    Simlation_time = 3600*8
+    Simlation_time = 3600*8*30*12*2
+    # Simlation_time = 3600*8
     num_of_replication = 10
     # Simulation_time = 2*12*30*8*3600
     f = open('AVSRS_Simulation_Result.txt', 'w')
-    for k_th, config in enumerate([sim_config[5]]):
+    for k_th, config in enumerate([sim_config[0]]):
+    # for k_th, config in enumerate(sim_config):
+    
         A, T, B, containers, A_Z, lambda_Z, v_v, v_a, l_v, l_a= config
         lambda_Z /= 3600
         sides = 2
@@ -624,7 +623,6 @@ if __name__ == "__main__":
 
         env = simpy.Environment()
         warehouse = Warehouse(A_Z, T, B, sides)
-        warehouse.init_warehouse()
         lift = Lift(l_v, l_a)
         fleet = Fleet(num_of_vehicles_Z, v_v, v_a)
         lift_re = simpy.Resource(env, 1)
@@ -635,7 +633,8 @@ if __name__ == "__main__":
         
         # print(f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}')
         # print('\n\n\nUL:{:.3f}, UV:{:.3f}, EC:{:.3f}\n\n'.format(sim.U_L, sim.U_V, sim.E_C))
-        conf = f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}'
+        out = []
+        conf = f'\nA={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}'
         res = '\nUL:{:.3f}, UV:{:.3f}, EC:{:.3f}\n\n'.format(sim.U_L, sim.U_V, sim.E_C)
         f.write(conf)
         f.write(res)
