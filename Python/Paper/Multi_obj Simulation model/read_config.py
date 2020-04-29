@@ -33,9 +33,9 @@ def get_simulation(warehouse, va):
     From two input, generate 2*2*3*3 different simulation environment.
     """
     sim = []
-    for i in warehouse:
-        for vv in va[:2]:
-            for vl in va[2:4]:
+    for vv in va[:2]:
+        for vl in va[2:4]:
+            for i in warehouse:
                 sim.append(i+vv+vl)
     return sim
 
@@ -43,4 +43,4 @@ def get_simulation(warehouse, va):
 if __name__ == "__main__":
     wareh = get_config('Configuration.txt')
     v_a = get_velcity_profile('Velocity_profile.txt')
-    print(get_simulation(wareh, v_a)[0])    
+    print(get_simulation(wareh, v_a))    
