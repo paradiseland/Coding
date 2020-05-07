@@ -274,10 +274,10 @@ class Simulation:
 
     @property
     def U_V(self):
-        return sum([sum(i.busytime) for i in fleet.vehicles])/(Simlation_time*fleet.num)
+        return sum([sum(i.busytime) for i in fleet.vehicles])/(Simulation_time*fleet.num)
     @property
     def U_L(self):
-        return sum(lift.busytime)/Simlation_time
+        return sum(lift.busytime)/Simulation_time
 
     
     def source_storage(self, env, lift, fleet, lift_re, veh_re):
@@ -287,8 +287,7 @@ class Simulation:
         ind_s = 0
         while True:
             ind_s += 1
-            gs = self.good_store(
-                env, f'STORAGE {ind_s}', lift, fleet, lift_re, veh_re, warehouse)
+            gs = self.good_store(env, f'STORAGE {ind_s}', lift, fleet,lift_re, veh_re, warehouse)
             env.process(gs)
             t_arrive_storage = random.expovariate(lambda_ZS)
             yield env.timeout(t_arrive_storage)
@@ -511,8 +510,7 @@ class Simulation:
             yield req_veh
 
             label_v_start = env.now
-            print("{:10.2f}, \033[1;31m{}\33[0m seized vehicle\033[1;36m {} \33[0m, vehicle place is at {}".format(
-                env.now, name, v+1, fleet.vehicles[v].place))
+            print("{:10.2f}, \033[1;31m{}\33[0m seized lift".format(env.now, name, v+1))
             fleet.vehicles[v].busy(IO)
 
             if fleet.vehicles[v].place[1] == load[1]:
@@ -566,10 +564,14 @@ class Simulation:
 
                     meet_time = max(travel_to_lift, travel_veh_tier)
                     yield env.timeout(meet_time)
+                    print("{:10.2f},vehicle \033[1;34m {} \33[0m and lift meet at lift location.".format(env.now, v+1))
+
 
                     lift_height = abs(fleet.vehicles[v].place[1] - load[1]) * warehouse.coe_length['height_tier']
                     travel_to_load_tier = lift.get_transport_time(lift_height)
                     yield env.timeout(travel_to_load_tier)
+                    print("{:10.2f},vehicle \033[1;34m {} \33[0m and lift get load tier.".format(env.now, v+1))
+
 
                     travel_length = [load[2] * warehouse.coe_length['bay'], abs(load[0]-IO[0]) * warehouse.coe_length['width_of_aisle']]
                     travel_to_retrieval = sum([fleet.vehicles[v].get_transport_time(t) for t in travel_length])
@@ -596,12 +598,11 @@ if __name__ == "__main__":
     wareh = get_config('Configuration.txt')
     v_a = get_velcity_profile('Velocity_profile.txt')
     sim_config = get_simulation(wareh, v_a)
-    Simlation_time = 3600*8*30*12*2
-    # Simlation_time = 3600*8
     num_of_replication = 10
+    Simulation_time = 3600*8
     # Simulation_time = 2*12*30*8*3600
     f = open('AVSRS_Simulation_Result.txt', 'w')
-    for k_th, config in enumerate([sim_config[0]]):
+    for k_th, config in enumerate(sim_config):
     # for k_th, config in enumerate(sim_config):
     
         A, T, B, containers, A_Z, lambda_Z, v_v, v_a, l_v, l_a= config
@@ -628,7 +629,7 @@ if __name__ == "__main__":
         lift_re = simpy.Resource(env, 1)
         veh_re = [simpy.Resource(env, 1) for i in range(num_of_vehicles_Z)]
         sim = Simulation(env, lift, fleet, lift_re, veh_re, warehouse)
-        env.run(until=Simlation_time)
+        env.run(until=Simulation_time)
 
         
         # print(f'\n A={A}, B={B}, T={T}, V_v={v_v}, V_a={v_a}, L_v={l_v}, L_a={l_a}')
